@@ -23,16 +23,15 @@ public class Client {
 				a = true;
 		}
 
-		System.out.println(String.valueOf(c) + " + " + String.valueOf(i) + " + " + String.valueOf(a));
-
 		try {
 			Socket serverConnection = new Socket("localhost", 8080);
 			OutputStream outStream = serverConnection.getOutputStream();
 			PrintStream printStream = new PrintStream(outStream, true);
-			printStream.println(String.valueOf(c) + " + " + String.valueOf(i) + " + " + String.valueOf(a));
+			printStream.println(String.valueOf(c) + " " + String.valueOf(i) + " " + String.valueOf(a));
 
 		} catch (Exception e) {
 			System.out.println("Exception: " + e);
 		}
 	}
+
 }
