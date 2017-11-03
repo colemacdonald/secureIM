@@ -17,6 +17,7 @@ public class Server {
 
 	private static StringBuffer inputBuffer;// = StringBuffer();
 	private static InputThread t;// = InputThread("user-in", inputBuffer);
+	private static Thread thread;
 	private static boolean c = false;
 	private static boolean i = false;
 	private static boolean a = false;
@@ -41,20 +42,25 @@ public class Server {
 		i = args[0].contains("i");
 	}
 
-	public static void main(String[] args) throws InterruptedException {
+	public static void main(String[] args) {
+		parseCommandLine(args);
+
+		/*			TESTING InputThread 		*/
 		inputBuffer = new StringBuffer();
 		t = new InputThread("user-in", inputBuffer);
-
-		parseCommandLine(args);
 
 		t.start();
 
 		for(int i = 0; i < 9999999; i++)
 		{
-			System.out.println("----- Tick -----");
-
-			Thread.sleep(2000);
+			if(!inputBuffer.toString().equals(""))
+			{
+				System.out.println("\n Main reading input as: " + inputBuffer.toString());
+				inputBuffer.setLength(0);
+			}
 		}
+
+		/*			END TEST 			*/
 
 		try {
 

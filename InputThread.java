@@ -7,6 +7,9 @@ import java.util.Scanner;
 import java.lang.Thread;
 import java.lang.StringBuffer;
 
+/*
+ * Thread that takes in user input and appends to the provided StringBuffer
+ */
 
 class InputThread implements Runnable
 {
@@ -16,8 +19,8 @@ class InputThread implements Runnable
 
     InputThread(String _threadName, StringBuffer _buffer)
     {
-        inputBuffer = _buffer;
-        threadName = _threadName;
+        this.inputBuffer = _buffer;
+        this.threadName = _threadName;
     }
 
     public void run()
@@ -28,12 +31,12 @@ class InputThread implements Runnable
 
             // wait on input
             System.out.print("> ");
-            while(!userInput.hasNext());
+            while(!userInput.hasNextLine());
 
-            if(userInput.hasNext())
+            if(userInput.hasNextLine())
             {
-                //inputBuffer.append(userInput.nextLine());
-                System.out.println(userInput.nextLine());
+                inputBuffer.append("\n" + userInput.nextLine());
+                System.out.println("Thread sees: " + inputBuffer.toString());
             }
         }
     }
