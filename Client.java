@@ -1,7 +1,7 @@
 /*
-Implement client functionality as per assignment spec
+ * Implement client functionality as per assignment spec
+ */
 
-*/
 import java.net.*;
 import java.security.*;
 import javax.crypto.*;

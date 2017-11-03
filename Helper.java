@@ -1,12 +1,12 @@
+/*
+ * Class to include certain functions used by both client and server
+ */
+ 
 import java.net.*;
 import java.security.*;
 import javax.crypto.*;
 import java.io.*;
 import java.util.Arrays;
-
-/*
- * Class to include certain functions used by both client and server
- */
 
 public class Helper
 {
@@ -14,7 +14,8 @@ public class Helper
      * Converts a byte array into a hex string
      * Taken from: https://stackoverflow.com/questions/15429257/how-to-convert-byte-array-to-hexstring-in-java
      */
-    static String bytesToHex(byte[] in) {
+    static String bytesToHex(byte[] in) 
+    {
 		final StringBuilder builder = new StringBuilder();
 		for(byte b : in) {
 			builder.append(String.format("%02x", b));
@@ -29,13 +30,15 @@ public class Helper
 	static String computeDigest(String message)
 	{
 		String ret = "";
-		try {
+		try 
+        {
 			MessageDigest md = MessageDigest.getInstance("SHA-256");
 			md.update(message.getBytes());
 			byte[] digest = md.digest();
 			ret = bytesToHex(digest);
 		}
-		catch (Exception e) {
+		catch (Exception e) 
+        {
 			System.out.println("Exception: " + e);
 		}
 		return ret;

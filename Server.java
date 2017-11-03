@@ -1,15 +1,22 @@
 /*
-Implement server functionality as per assignment spec
+ * Implement server functionality as per assignment spec
+ */
 
-*/
 import java.net.*;
 import java.security.*;
 import javax.crypto.*;
 import java.io.*;
 import java.util.Arrays;
+import java.lang.Thread;
+import java.lang.StringBuffer;
+
+//dialog boxes
+import javax.swing.JOptionPane;
 
 public class Server {
 
+	private static StringBuffer inputBuffer;// = StringBuffer();
+	private static InputThread t;// = InputThread("user-in", inputBuffer);
 	private static boolean c = false;
 	private static boolean i = false;
 	private static boolean a = false;
@@ -29,18 +36,25 @@ public class Server {
 			System.exit(0);
 		}
 
-		for (int j = 0; j < args.length; j++){
-			if(args[j].contains("a"))
-				a = true;
-			if(args[j].contains("c"))
-				c = true;
-			if(args[j].contains("i"))
-				i = true;
-		}
+		a = args[0].contains("a");
+		c = args[0].contains("c");
+		i = args[0].contains("i");
 	}
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws InterruptedException {
+		inputBuffer = new StringBuffer();
+		t = new InputThread("user-in", inputBuffer);
+
 		parseCommandLine(args);
+
+		t.start();
+
+		for(int i = 0; i < 9999999; i++)
+		{
+			System.out.println("----- Tick -----");
+
+			Thread.sleep(2000);
+		}
 
 		try {
 
