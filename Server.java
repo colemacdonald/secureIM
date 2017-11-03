@@ -59,7 +59,6 @@ public class Server {
 				inputBuffer.setLength(0);
 			}
 		}
-
 		/*			END TEST 			*/
 
 		try {
