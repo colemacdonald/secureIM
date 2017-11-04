@@ -15,27 +15,9 @@ import java.lang.StringBuffer;
 public class Server {
 
 	private static StringBuffer inputBuffer;// = StringBuffer();
-	private static InputThread t;// = InputThread("user-in", inputBuffer);
-	private static Thread thread;
 
 	public static void main(String[] args) {
 		HashMap<String, Boolean> modes = GeneralHelper.parseCommandLine(args);
-
-		/*			TESTING InputThread 		*/
-		inputBuffer = new StringBuffer();
-		t = new InputThread("user-in", inputBuffer);
-
-		t.start();
-
-		for(int i = 0; i < 9999999; i++)
-		{
-			if(!inputBuffer.toString().equals(""))
-			{
-				System.out.println("\n Main reading input as: " + inputBuffer.toString());
-				inputBuffer.setLength(0);
-			}
-		}
-		/*			END TEST 			*/
 
 		
 		try {
@@ -46,10 +28,10 @@ public class Server {
 			while (true) {
 				try {
 					Socket clientConnection = server.accept();
-					System.out.println("Client connected!");					
+					System.out.println("Client connected!");
 
-					InputStream inStream = clientConnection.getInputStream();
-					BufferedReader bRead = new BufferedReader(new InputStreamReader(inStream));
+					InputStream clientInputStream = clientConnection.getInputStream();
+					BufferedReader bRead = new BufferedReader(new InputStreamReader(clientInputStream));
 					String line = bRead.readLine();
 
 					String flag_strings[] = line.split(" ");
@@ -59,10 +41,12 @@ public class Server {
 							|| modes.get("availability") != Boolean.parseBoolean(flag_strings[2])) {
 
 						System.out.println("Client modes do not match Server modes; closing connection.");
-						server.close();
+						continue;
 					}
 
-					
+					ReadSocketThread receiveMessageThread = new ReadSocketThread("send-messages", clientInputStream);
+					receiveMessageThread.start();
+
 				} catch (java.net.SocketException e) {
 					System.out.println(e);
 				}

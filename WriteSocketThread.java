@@ -15,11 +15,11 @@ class WriteSocketThread implements Runnable
 {
     private Thread t;
     private String threadName;
-    private StringBuffer inputBuffer;
+    private OutputStream outputStream;
 
-    WriteSocketThread(String _threadName, StringBuffer _buffer)
+    WriteSocketThread(String _threadName, OutputStream _outputStream)
     {
-        this.inputBuffer = _buffer;
+        this.outputStream = _outputStream;
         this.threadName = _threadName;
     }
 
@@ -30,14 +30,14 @@ class WriteSocketThread implements Runnable
             Scanner userInput = new Scanner(System.in);
 
             // wait on input
-            System.out.print("> ");
+            GeneralHelper.safePrintln("> ");
             while(!userInput.hasNextLine());
 
-            if(userInput.hasNextLine())
-            {
-                inputBuffer.append("\n" + userInput.nextLine());
-                System.out.println("Thread sees: " + inputBuffer.toString());
-            }
+            // if(userInput.hasNextLine())
+            // {
+            //     inputBuffer.append("\n" + userInput.nextLine());
+            //     safePrint("Thread sees: " + inputBuffer.toString());
+            // }
         }   
     }
 

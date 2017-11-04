@@ -1,3 +1,7 @@
+/*
+ * Security-related helper methods used by both client and server
+ */
+
 import java.security.*;
 import javax.crypto.*;
 
@@ -32,7 +36,7 @@ public class SecurityHelper {
 		}
 		catch (Exception e) 
         {
-			System.out.println("Exception: " + e);
+			GeneralHelper.safePrintln("Exception: " + e);
 		}
 		return ret;
 	}

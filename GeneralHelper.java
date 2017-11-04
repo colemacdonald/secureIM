@@ -39,4 +39,10 @@ public class GeneralHelper
 
         return modes;
     }
+
+    static void safePrintln(String s) {
+        synchronized(System.out) {
+            System.out.println(s);
+        }
+    }
 }
