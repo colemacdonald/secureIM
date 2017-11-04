@@ -26,21 +26,20 @@ public class SecurityHelper {
      * Uses java.security.MessageDigest to compute a SHA-256 hash
      * Returns a string of hex characters
      */
-	static String computeDigest(String message)
+	static byte[] computeDigest(byte[] message)
 	{
-		String ret = "";
+		byte[] digest = {};
 		try 
         {
 			MessageDigest md = MessageDigest.getInstance("SHA-256");
-			md.update(message.getBytes());
-			byte[] digest = md.digest();
-			ret = bytesToHex(digest);
+			md.update(message);
+			digest = md.digest();
 		}
 		catch (Exception e) 
         {
 			GeneralHelper.safePrintln("Exception: " + e);
 		}
-		return ret;
+		return digest;
 	}
 
     /*
@@ -49,32 +48,57 @@ public class SecurityHelper {
      */
     static boolean confirmDigest(String message, String receivedDigest)
     {
-        String computedDigest = computeDigest(message);
-        return computedDigest.equals(receivedDigest);
+        //String computedDigest = computeDigest(message);
+        return true; //computedDigest.equals(receivedDigest);
     }
 
     static String prepareMessage(String message, boolean confidential, boolean integrity, boolean authenticate)
     {
         StringBuilder ret = new StringBuilder();
 
-        if(confidential)
-        {
+        byte[] encryptedSession;
 
+        if(confidential) // encrypt with session key
+        {
+           // encryptedSession = encryptWithSessionKey(message.getBytes(), );
+        }
+        else
+        {
+            encryptedSession = message.getBytes();
         }
 
-        if(integrity)
+        if(integrity) // compute and add checksum
         {
-            ret.append(computeDigest(message));
-            ret.append("\n");
+            
         }
         ret.append(message);
 
-        if(authenticate)
+        if(authenticate || integrity) // encrypt with private key
         {
 
         }
 
         return ret.toString();
+    }
+
+    static String parseMessage(String encryptedMessage, boolean confidential, boolean integrity, boolean authenticate)
+    {
+        if(authenticate) // decrypt using public key
+        {
+
+        }
+
+        if(integrity) // seperate message from digest and compare
+        {
+
+        }
+
+        if(confidential) // decrypt using session key
+        {
+        
+        }
+
+        return "";
     }
 
     static String encryptWithSessionKey(String sessionKey) {
