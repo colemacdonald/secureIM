@@ -1,9 +1,11 @@
+package secureIM;
 /*
  * Security-related helper methods used by both client and server
  */
 
 import java.security.*;
 import javax.crypto.*;
+import static secureIM.GeneralHelper.*;
 
 public class SecurityHelper {
 
@@ -36,7 +38,7 @@ public class SecurityHelper {
 		}
 		catch (Exception e) 
         {
-			GeneralHelper.safePrintln("Exception: " + e);
+			safePrintln("Exception: " + e);
 		}
 		return ret;
 	}

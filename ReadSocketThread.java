@@ -1,6 +1,6 @@
+package secureIM;
+
 import java.net.*;
-import java.security.*;
-import javax.crypto.*;
 import java.io.*;
 import java.util.Arrays;
 import java.util.Scanner;
@@ -9,6 +9,7 @@ import java.lang.StringBuffer;
 import java.util.Date;
 import java.text.SimpleDateFormat;
 import java.text.DateFormat;
+import static secureIM.GeneralHelper.*;
 
 /*
  * Thread that monitors socket for incoming messages

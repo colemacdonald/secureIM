@@ -1,16 +1,17 @@
+package secureIM;
+
 /*
  * Implement client functionality as per assignment spec
  */
 
 import java.net.*;
-import java.security.*;
-import javax.crypto.*;
 import java.io.*;
 import java.util.HashMap;
+import static secureIM.GeneralHelper.*;
 
 public class Client {
 	public static void main(String[] args) {
-		HashMap<String, Boolean> modes = GeneralHelper.parseCommandLine(args);		
+		HashMap<String, Boolean> modes = parseCommandLine(args);		
 
 		try {
 			Socket serverConnection = new Socket("localhost", 8080);

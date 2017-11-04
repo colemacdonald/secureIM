@@ -1,17 +1,14 @@
+package secureIM;
 /*
  * Class to include certain functions used by both client and server
  */
  
-import java.net.*;
-import java.security.*;
-import javax.crypto.*;
 import java.io.*;
 import java.util.Arrays;
 import java.util.HashMap;
 
 public class GeneralHelper
 {
-
     static void printUsage()
     {
         System.out.println("Invalid use. Usage:\njava Server [-cia]");

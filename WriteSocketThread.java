@@ -1,3 +1,5 @@
+package secureIM;
+
 import java.net.*;
 import java.security.*;
 import javax.crypto.*;
@@ -6,6 +8,7 @@ import java.util.Arrays;
 import java.util.Scanner;
 import java.lang.Thread;
 import java.lang.StringBuffer;
+import secureIM.GeneralHelper.*;
 
 /*
  * Thread that takes in user input and appends to the provided StringBuffer

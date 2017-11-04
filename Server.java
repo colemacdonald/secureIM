@@ -1,15 +1,15 @@
+package secureIM;
 /*
  * Implement server functionality as per assignment spec
  */
 
 import java.net.*;
-import java.security.*;
-import javax.crypto.*;
 import java.io.*;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.lang.Thread;
 import java.lang.StringBuffer;
+import static secureIM.GeneralHelper.*;
 
 
 public class Server {
@@ -17,7 +17,7 @@ public class Server {
 	private static StringBuffer inputBuffer;// = StringBuffer();
 
 	public static void main(String[] args) {
-		HashMap<String, Boolean> modes = GeneralHelper.parseCommandLine(args);
+		HashMap<String, Boolean> modes = parseCommandLine(args);
 
 		
 		try {
