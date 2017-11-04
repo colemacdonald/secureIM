@@ -9,7 +9,7 @@ import java.io.*;
 import java.util.Arrays;
 import java.util.HashMap;
 
-public class Helper
+public class GeneralHelper
 {
 
     static void printUsage()
