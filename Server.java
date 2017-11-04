@@ -39,30 +39,41 @@ public class Server {
 		}
 		/*			END TEST 			*/
 
+		
 		try {
-
 			ServerSocket server = new ServerSocket(8080);
+			server.setReuseAddress(true);
 			System.out.println("Waiting for client...");
-			Socket clientConnection = server.accept();
-			System.out.println("Client connected!");					
 
-			InputStream inStream = clientConnection.getInputStream();
-			BufferedReader bRead = new BufferedReader(new InputStreamReader(inStream));
-			String line = bRead.readLine();
+			while (true) {
+				try {
+					Socket clientConnection = server.accept();
+					System.out.println("Client connected!");					
 
-			String flag_strings[] = line.split(" ");
+					InputStream inStream = clientConnection.getInputStream();
+					BufferedReader bRead = new BufferedReader(new InputStreamReader(inStream));
+					String line = bRead.readLine();
 
-			if (modes.get("confidentiality") != Boolean.parseBoolean(flag_strings[0]) 
-					|| modes.get("integrity") != Boolean.parseBoolean(flag_strings[1]) 
-					|| modes.get("availability") != Boolean.parseBoolean(flag_strings[2])) {
-				System.out.println("Client modes do not match Server modes; closing connection.");
-				server.close();
+					String flag_strings[] = line.split(" ");
+
+					if (modes.get("confidentiality") != Boolean.parseBoolean(flag_strings[0]) 
+							|| modes.get("integrity") != Boolean.parseBoolean(flag_strings[1]) 
+							|| modes.get("availability") != Boolean.parseBoolean(flag_strings[2])) {
+
+						System.out.println("Client modes do not match Server modes; closing connection.");
+						server.close();
+					}
+				} catch (java.net.SocketException e) {
+					System.out.println(e);
+					//server.close();
+				}
 			}
-
-
-
-		} catch (Exception e) {
-			System.out.println("Exception: " + e);
-		}
+		} catch (java.net.SocketException e) {
+			System.out.println("SocketException: " + e);
+			System.exit(0);
+		} catch (IOException e) {
+			System.out.println("IOException: " + e);
+			System.exit(0);
+		}		
 	}
 }
