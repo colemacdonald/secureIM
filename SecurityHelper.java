@@ -3,9 +3,12 @@
  * Security-related helper methods used by both client and server
  */
 
-import java.security.*;
-import javax.crypto.*;
 import java.lang.*;
+import java.util.*;
+import java.security.*;
+import java.security.spec.*;
+import javax.crypto.*;
+import javax.crypto.spec.*;
 
 public class SecurityHelper {
 
@@ -101,9 +104,60 @@ public class SecurityHelper {
         return "";
     }
 
-    static String encryptWithSessionKey(String sessionKey) {
+    static byte[] encryptWithSessionKey(byte[] plaintext, SecretKey sessionKey) {
+        try {
+            Cipher c = Cipher.getInstance("AES/CBC/NoPadding");
 
+            c.init(Cipher.ENCRYPT_MODE, sessionKey);
 
-        return "";
+            byte[] cipherText = c.doFinal(plaintext);
+        
+            return cipherText;
+            
+        } catch (Exception e) {
+            System.out.println(e);
+            System.exit(0);
+            return null;
+        }
+    }
+
+    static SecretKey generatePasswordBasedKey(String password) {
+        try {
+            char[] passwordChars = password.toCharArray();
+
+            SecureRandom random = new SecureRandom();
+            byte[] salt = new byte[16];
+            random.nextBytes(salt);
+
+            KeySpec passwordBasedKey = new PBEKeySpec(passwordChars, salt, 65536, 256);
+
+            SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
+            SecretKey tmp = factory.generateSecret(passwordBasedKey);
+
+            SecretKey finalKey = new SecretKeySpec(tmp.getEncoded(), "AES");
+            return finalKey;
+
+        } catch (Exception e) {
+            System.out.println(e);
+            System.exit(0);
+            return null;
+        }
+    }
+
+    public static void main(String[] args) {
+        String password = "cailan";
+        System.out.println("Password: " + password);
+
+        SecretKey sessionKey = generatePasswordBasedKey(password);
+        System.out.println("Key: " + Arrays.toString(sessionKey.getEncoded()));
+
+        String plaintext = "hello, world";
+        System.out.println("plaintext: " + plaintext);
+
+        byte[] ciphertext = encryptWithSessionKey(plaintext.getBytes(), sessionKey);
+        System.out.println("ciphertext: " + Arrays.toString(ciphertext));
+        //byte[] plaintext = "hello, world".getBytes();
+
+        //System.out.println("Encrypted message: " + Arrays.toString(encryptWithSessionKey(plaintext, hashedPassword)));
     }
 }
