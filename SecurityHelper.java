@@ -78,6 +78,8 @@ public class SecurityHelper {
     }
 
     static String encryptWithSessionKey(String sessionKey) {
+        
+
         return "";
     }
 }
