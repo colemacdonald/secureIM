@@ -11,13 +11,13 @@ import java.lang.StringBuffer;
  * Thread that takes in user input and appends to the provided StringBuffer
  */
 
-class InputThread implements Runnable
+class WriteSocketThread implements Runnable
 {
     private Thread t;
     private String threadName;
     private StringBuffer inputBuffer;
 
-    InputThread(String _threadName, StringBuffer _buffer)
+    WriteSocketThread(String _threadName, StringBuffer _buffer)
     {
         this.inputBuffer = _buffer;
         this.threadName = _threadName;
