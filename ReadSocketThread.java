@@ -19,7 +19,6 @@ class ReadSocketThread implements Runnable
 {
     private Thread t;
     private String threadName;
-    private StringBuffer inputBuffer;
     private InputStream inStream;
 
     ReadSocketThread(String _threadName, InputStream _inStream)
@@ -40,14 +39,14 @@ class ReadSocketThread implements Runnable
                 String msg = msgIn.next();
                 DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
                 Date date = new Date();
-                System.out.println(dateFormat.format(date) + " - " + msg);
+                GeneralHelper.safePrintln(dateFormat.format(date) + " - " + msg);
             }
         }   
     }
 
     public void start () 
     {
-        System.out.println("Starting " +  threadName );
+        GeneralHelper.safePrintln("Starting " +  threadName );
         if(t == null) 
         {
             t = new Thread(this, threadName);

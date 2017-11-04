@@ -52,4 +52,28 @@ public class SecurityHelper {
         String computedDigest = computeDigest(message);
         return computedDigest.equals(receivedDigest);
     }
+
+    static String prepareMessage(String message, Boolean confidential, Boolean integrity, Boolean authenticate)
+    {
+        StringBuilder ret = StringBuilder();
+
+        if(confidential)
+        {
+
+        }
+
+        if(integrity)
+        {
+            ret.append(computeDigest(message));
+            ret.append("\n");
+        }
+        ret.append(message);
+
+        if(authenticate)
+        {
+
+        }
+
+        return ret;
+    }
 }
