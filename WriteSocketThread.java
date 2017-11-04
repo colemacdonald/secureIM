@@ -18,6 +18,7 @@ class WriteSocketThread implements Runnable
     private Thread t;
     private String threadName;
     private OutputStream outputStream;
+    private StringBuffer inputBuffer;
 
     WriteSocketThread(String _threadName, OutputStream _outputStream)
     {
@@ -27,21 +28,24 @@ class WriteSocketThread implements Runnable
 
     public void run()
     {
+        inputBuffer = new StringBuffer();
+        Scanner userInput = new Scanner(System.in);
+        UserInput ui = new UserInput(inputBuffer);
+        ui.CreateTextField();
+
         for(;;)
         {
-            Scanner userInput = new Scanner(System.in);
-
             // wait on input
             GeneralHelper.safePrintln("> ");
-            while(!userInput.hasNextLine());
+            while(inputBuffer.length() == 0);
 
-            // if(userInput.hasNextLine())
-            // {
-            //     inputBuffer.append("\n" + userInput.nextLine());
-            //     safePrint("Thread sees: " + inputBuffer.toString());
-            // }
+            //inputBuffer.append("\n" + userInput.nextLine());
+            GeneralHelper.safePrintln("Thread sees: " + inputBuffer.toString());
+
+            inputBuffer.setLength(0);
         }   
     }
+
 
     public void start() 
     {

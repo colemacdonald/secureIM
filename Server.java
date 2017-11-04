@@ -29,8 +29,11 @@ public class Server {
 					Socket clientConnection = server.accept();
 					System.out.println("Client connected!");
 
+					OutputStream userInputStream = clientConnection.getOutputStream();
 					InputStream clientInputStream = clientConnection.getInputStream();
 					BufferedReader bRead = new BufferedReader(new InputStreamReader(clientInputStream));
+					
+					/*
 					String line = bRead.readLine();
 
 					String flag_strings[] = line.split(" ");
@@ -42,9 +45,12 @@ public class Server {
 						System.out.println("Client modes do not match Server modes; closing connection.");
 						continue;
 					}
-
-					ReadSocketThread receiveMessageThread = new ReadSocketThread("send-messages", clientInputStream);
+					*/
+					ReadSocketThread receiveMessageThread = new ReadSocketThread("receive-messages", clientInputStream);
 					receiveMessageThread.start();
+
+					WriteSocketThread sendMessageThread = new WriteSocketThread("send-messages", userInputStream);
+					sendMessageThread.start();
 
 				} catch (java.net.SocketException e) {
 					System.out.println(e);
