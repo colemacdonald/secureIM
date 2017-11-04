@@ -16,6 +16,8 @@ public class Client {
 			Socket serverConnection = new Socket("localhost", 8080);
 			OutputStream outStream = serverConnection.getOutputStream();
 			PrintStream printStream = new PrintStream(outStream, true);
+
+			while(true);
 			//printStream.println(String.valueOf(c) + " " + String.valueOf(i) + " " + String.valueOf(a));
 
 		} catch (Exception e) {
