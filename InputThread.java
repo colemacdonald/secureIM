@@ -41,7 +41,7 @@ class InputThread implements Runnable
         }
     }
 
-    public void start () 
+    public void start() 
     {
         System.out.println("Starting " +  threadName );
         if(t == null) 

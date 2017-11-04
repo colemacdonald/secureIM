@@ -18,8 +18,6 @@ public class Client {
 			PrintStream printStream = new PrintStream(outStream, true);
 
 			while(true);
-			//printStream.println(String.valueOf(c) + " " + String.valueOf(i) + " " + String.valueOf(a));
-
 		} catch (Exception e) {
 			System.out.println("Exception: " + e);
 		}

@@ -63,9 +63,10 @@ public class Server {
 						System.out.println("Client modes do not match Server modes; closing connection.");
 						server.close();
 					}
+
+					
 				} catch (java.net.SocketException e) {
 					System.out.println(e);
-					//server.close();
 				}
 			}
 		} catch (java.net.SocketException e) {
