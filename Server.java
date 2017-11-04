@@ -11,8 +11,6 @@ import java.util.HashMap;
 import java.lang.Thread;
 import java.lang.StringBuffer;
 
-//dialog boxes
-import javax.swing.JOptionPane;
 
 public class Server {
 

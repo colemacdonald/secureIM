@@ -38,7 +38,7 @@ class WriteSocketThread implements Runnable
                 inputBuffer.append("\n" + userInput.nextLine());
                 System.out.println("Thread sees: " + inputBuffer.toString());
             }
-        }
+        }   
     }
 
     public void start() 

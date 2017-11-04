@@ -1,6 +1,8 @@
 all:
-	javac Helper.java
-	javac InputThread.java
+	javac GeneralHelper.java
+	javac SecurityHelper.java
+	javac WriteSocketThread.java
+	javac ReadSocketThread.java
 	javac Server.java
 	javac Client.java
 clean:
