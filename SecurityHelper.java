@@ -6,7 +6,6 @@ package secureIM;
 import java.security.*;
 import javax.crypto.*;
 import java.lang.*;
-import static secureIM.GeneralHelper.*;
 
 public class SecurityHelper {
 
@@ -39,7 +38,7 @@ public class SecurityHelper {
 		}
 		catch (Exception e) 
         {
-			safePrintln("Exception: " + e);
+			GeneralHelper.safePrintln("Exception: " + e);
 		}
 		return ret;
 	}
@@ -54,7 +53,7 @@ public class SecurityHelper {
         return computedDigest.equals(receivedDigest);
     }
 
-    static String prepareMessage(String message, Boolean confidential, Boolean integrity, Boolean authenticate)
+    static String prepareMessage(String message, boolean confidential, boolean integrity, boolean authenticate)
     {
         StringBuilder ret = new StringBuilder();
 
@@ -76,5 +75,9 @@ public class SecurityHelper {
         }
 
         return ret.toString();
+    }
+
+    static String encryptWithSessionKey(String sessionKey) {
+        return "";
     }
 }

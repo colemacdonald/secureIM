@@ -9,7 +9,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.lang.Thread;
 import java.lang.StringBuffer;
-import static secureIM.GeneralHelper.*;
 
 
 public class Server {
@@ -17,7 +16,7 @@ public class Server {
 	private static StringBuffer inputBuffer;// = StringBuffer();
 
 	public static void main(String[] args) {
-		HashMap<String, Boolean> modes = parseCommandLine(args);
+		HashMap<String, Boolean> modes = GeneralHelper.parseCommandLine(args);
 
 		
 		try {

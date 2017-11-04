@@ -9,7 +9,6 @@ import java.lang.StringBuffer;
 import java.util.Date;
 import java.text.SimpleDateFormat;
 import java.text.DateFormat;
-import static secureIM.GeneralHelper.*;
 
 /*
  * Thread that monitors socket for incoming messages
