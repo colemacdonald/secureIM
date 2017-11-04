@@ -1,4 +1,4 @@
-package secureIM;
+//package secureIM;
 /*
  * Security-related helper methods used by both client and server
  */
@@ -78,7 +78,7 @@ public class SecurityHelper {
     }
 
     static String encryptWithSessionKey(String sessionKey) {
-        
+
 
         return "";
     }

@@ -1,4 +1,4 @@
-package secureIM;
+//package secureIM;
 /*
  * Implement server functionality as per assignment spec
  */

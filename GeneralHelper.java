@@ -1,4 +1,4 @@
-package secureIM;
+//package secureIM;
 /*
  * Class to include certain functions used by both client and server
  */
