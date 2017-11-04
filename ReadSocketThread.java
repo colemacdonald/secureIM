@@ -7,6 +7,8 @@ import java.util.Scanner;
 import java.lang.Thread;
 import java.lang.StringBuffer;
 import java.util.Date;
+import java.text.SimpleDateFormat;
+import java.text.DateFormat;
 
 /*
  * Thread that monitors socket for incoming messages

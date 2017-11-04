@@ -19,7 +19,7 @@ public class Server {
 	private static Thread thread;
 
 	public static void main(String[] args) {
-		HashMap<String, Boolean> modes = Helper.parseCommandLine(args);
+		HashMap<String, Boolean> modes = GeneralHelper.parseCommandLine(args);
 
 		/*			TESTING InputThread 		*/
 		inputBuffer = new StringBuffer();

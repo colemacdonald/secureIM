@@ -10,7 +10,7 @@ import java.util.HashMap;
 
 public class Client {
 	public static void main(String[] args) {
-		HashMap<String, Boolean> modes = Helper.parseCommandLine(args);		
+		HashMap<String, Boolean> modes = GeneralHelper.parseCommandLine(args);		
 
 		try {
 			Socket serverConnection = new Socket("localhost", 8080);
