@@ -35,4 +35,8 @@ public class UserInput implements ActionListener{
 		    }
 		   });	
 	}
+
+	public void actionPerformed(ActionEvent e) {
+		// Do thing for now
+	}
 }
