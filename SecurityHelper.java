@@ -5,6 +5,7 @@ package secureIM;
 
 import java.security.*;
 import javax.crypto.*;
+import java.lang.*;
 import static secureIM.GeneralHelper.*;
 
 public class SecurityHelper {
@@ -55,7 +56,7 @@ public class SecurityHelper {
 
     static String prepareMessage(String message, Boolean confidential, Boolean integrity, Boolean authenticate)
     {
-        StringBuilder ret = StringBuilder();
+        StringBuilder ret = new StringBuilder();
 
         if(confidential)
         {
@@ -74,6 +75,6 @@ public class SecurityHelper {
 
         }
 
-        return ret;
+        return ret.toString();
     }
 }
