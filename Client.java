@@ -21,7 +21,7 @@ public class Client {
 			PrintStream printStream = new PrintStream(outStream, true);
 			printStream.println("testing send");
 
-			ReadSocketThread receiveMessageThread = new ReadSocketThread("client-read", inStream);
+			ReadSocketThread receiveMessageThread = new ReadSocketThread("client-read", inStream, modes);
 
 			WriteSocketThread sendMessageThread = new WriteSocketThread("client-write", outStream);
 
@@ -30,5 +30,4 @@ public class Client {
 			System.out.println("Exception: " + e);
 		}
 	}
-
 }

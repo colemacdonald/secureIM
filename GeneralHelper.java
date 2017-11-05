@@ -25,11 +25,11 @@ public class GeneralHelper
             printUsage();
             System.exit(0);
         } else if (args.length == 0) {
-            modes.put("availability", false);
+            modes.put("authentication", false);
             modes.put("confidentiality", false);
             modes.put("integrity", false);
         } else {
-            modes.put("availability", args[0].contains("a"));
+            modes.put("authentication", args[0].contains("a"));
             modes.put("confidentiality", args[0].contains("c"));
             modes.put("integrity", args[0].contains("i"));
         }

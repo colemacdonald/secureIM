@@ -3,6 +3,8 @@
  * Security-related helper methods used by both client and server
  */
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.lang.*;
 import java.util.*;
 import java.security.*;
@@ -10,7 +12,11 @@ import java.security.spec.*;
 import javax.crypto.*;
 import javax.crypto.spec.*;
 
+
+
 public class SecurityHelper {
+
+    static final int DIGEST_LENGTH = 32;
 
     /*
      * Converts a byte array into a hex string
@@ -23,7 +29,21 @@ public class SecurityHelper {
 			builder.append(String.format("%02x", b));
 		}
 		return builder.toString();
-	}
+    }
+    
+    /*
+     * Converts hex string to corresponding byte array
+     * Taken from: https://stackoverflow.com/questions/140131/convert-a-string-representation-of-a-hex-dump-to-a-byte-array-using-java
+     */
+    public static byte[] hexStringToByteArray(String s) {
+        int len = s.length();
+        byte[] data = new byte[len / 2];
+        for (int i = 0; i < len; i += 2) {
+            data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
+                                 + Character.digit(s.charAt(i+1), 16));
+        }
+        return data;
+    }
 
     /*
      * Uses java.security.MessageDigest to compute a SHA-256 hash
@@ -49,59 +69,78 @@ public class SecurityHelper {
      * To be used when receiveing a message - check received digest against computed one
      * TODO: Will the digest have been seperated from the msg at this point?
      */
-    static boolean confirmDigest(String message, String receivedDigest)
+    static boolean confirmDigest(byte[] received)
     {
-        //String computedDigest = computeDigest(message);
-        return true; //computedDigest.equals(receivedDigest);
+        byte[] receivedDigest = Arrays.copyOfRange(received, received.length - DIGEST_LENGTH, received.length);
+        byte[] message = Arrays.copyOfRange(received, 0, received.length - DIGEST_LENGTH);
+
+        byte[] computedDigest = computeDigest(message);
+        return Arrays.equals(computedDigest, receivedDigest);
     }
 
-    static String prepareMessage(String message, boolean confidential, boolean integrity, boolean authenticate)
+    static String prepareMessage(String message, HashMap<String, Boolean> modes, 
+        SecretKey sessionKey, SecretKey privateKey, byte[] iv)
     {
-        StringBuilder ret = new StringBuilder();
+        /* CONFIDENTIALITY */
+        byte[] encryptedWithSession;
 
-        byte[] encryptedSession;
-
-        if(confidential) // encrypt with session key
-        {
-           // encryptedSession = encryptWithSessionKey(message.getBytes(), );
-        }
-        else
-        {
-            encryptedSession = message.getBytes();
+        if(modes.get("confidentiality")) {// encrypt with session key
+           encryptedWithSession = encryptWithSessionKey(message.getBytes(), iv, sessionKey);
+        } else {
+            encryptedWithSession = message.getBytes();
         }
 
-        if(integrity) // compute and add checksum
-        {
-            
+        /* INTEGRITY */
+        ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+        try{
+            byteStream.write(encryptedWithSession);
+
+            if(modes.get("integrity")) { // compute and add checksum
+                byteStream.write(computeDigest(encryptedWithSession));
+            }
         }
-        ret.append(message);
-
-        if(authenticate || integrity) // encrypt with private key
+        catch (IOException e)
         {
-
+            System.out.println("Exception: " + e);
         }
 
-        return ret.toString();
+        /* AUTHENTICATION / INTEGRITY */
+        if(modes.get("authentication") || modes.get("integrity")) {// encrypt with private key
+
+        }
+        return bytesToHex(byteStream.toByteArray());
     }
 
-    static String parseMessage(String encryptedMessage, boolean confidential, boolean integrity, boolean authenticate)
+    static String parseAndDecryptMessage(String encryptedMessage, HashMap<String, Boolean> modes, SecretKey sessionKey, SecretKey privateKey, byte[] iv)
     {
-        if(authenticate) // decrypt using public key
+        byte[] encryptedBytes = hexStringToByteArray(encryptedMessage);
+        if(modes.get("authentication")) // decrypt using public key
         {
 
         }
 
-        if(integrity) // seperate message from digest and compare
+        byte[] justMessage;
+        if(modes.get("integrity")) // seperate message from digest and compare
         {
-
+            if(!confirmDigest(encryptedBytes))
+            {
+                System.out.println("Digest did not match. Likely tampered with.");
+                //TODO: what to do?
+            }
+            justMessage = Arrays.copyOfRange(encryptedBytes, 0, encryptedBytes.length - DIGEST_LENGTH);
+        } else {
+            justMessage = encryptedBytes;
         }
 
-        if(confidential) // decrypt using session key
+        String plainText;
+        if(modes.get("confidentiality")) // decrypt using session key
         {
-        
+            plainText = new String(decryptWithSessionKey(justMessage, iv, sessionKey));
+        } else {
+            plainText = new String(justMessage);
         }
 
-        return "";
+        return plainText;
     }
 
     static byte[] encryptWithSessionKey(byte[] plaintext, byte[] initializationVector, SecretKey sessionKey) {
@@ -176,6 +215,17 @@ public class SecurityHelper {
 
         String plaintext = "hello, world";
         System.out.println("plaintext: " + plaintext);
+
+        HashMap<String, Boolean> modes = new HashMap<String, Boolean>();
+
+        modes.put("authentication", true);
+        modes.put("confidentiality", true);
+        modes.put("integrity", true);
+
+        String msg = prepareMessage(plaintext, modes, sessionKey, sessionKey, initializationVector);
+        System.out.println("MESSAGE: " + msg);
+        String msg2 = parseAndDecryptMessage(msg, modes, sessionKey, sessionKey, initializationVector);
+        System.out.println("DECRYPTED: " + msg2);
 
         byte[] ciphertext = encryptWithSessionKey(plaintext.getBytes(), initializationVector, sessionKey);
         System.out.println("ciphertext: " + Arrays.toString(ciphertext));

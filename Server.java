@@ -46,7 +46,7 @@ public class Server {
 						continue;
 					}
 					*/
-					ReadSocketThread receiveMessageThread = new ReadSocketThread("receive-messages", clientInputStream);
+					ReadSocketThread receiveMessageThread = new ReadSocketThread("receive-messages", clientInputStream, modes);
 					receiveMessageThread.start();
 
 					WriteSocketThread sendMessageThread = new WriteSocketThread("send-messages", userInputStream);

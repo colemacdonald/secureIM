@@ -2,6 +2,7 @@
 
 import java.net.*;
 import java.io.*;
+import java.util.*;
 import java.util.Arrays;
 import java.util.Scanner;
 import java.lang.Thread;
@@ -19,11 +20,13 @@ class ReadSocketThread implements Runnable
     private Thread t;
     private String threadName;
     private InputStream inStream;
+    private HashMap<String, Boolean> modes;
 
-    ReadSocketThread(String _threadName, InputStream _inStream)
+    ReadSocketThread(String _threadName, InputStream _inStream, HashMap<String, Boolean> _modes)
     {
         this.inStream = _inStream;
         this.threadName = _threadName;
+        this.modes = _modes;
     }
 
     public void run()
@@ -36,8 +39,8 @@ class ReadSocketThread implements Runnable
 
             if(msgIn.hasNext())
             {
-                String msg = msgIn.next();
-                String plainMsg = SecurityHelper.parseMessage(msg, true, true, true);
+                byte[] msg = {};//msgIn.next();
+                String plainMsg = "";//SecurityHelper.parseMessage(msg, true, true, true);
                 DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
                 Date date = new Date();
                 GeneralHelper.safePrintln(dateFormat.format(date) + " - " + plainMsg);
