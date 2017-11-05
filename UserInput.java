@@ -10,13 +10,14 @@ public class UserInput implements ActionListener{
 	JFrame frame;
 	JTextField inputTextField;
 	StringBuffer userInput;
+	Object inputReady;
 
-	UserInput(StringBuffer _userInput){
+	UserInput(StringBuffer _userInput, Object _inputReady){
 		this.userInput = _userInput;
+		this.inputReady = _inputReady;
 	}
 
 	void CreateTextField(){
-
 		frame = new JFrame("IM");
         inputTextField = new JTextField(20);
         inputTextField.setBounds(50,100, 200,30);
@@ -25,18 +26,24 @@ public class UserInput implements ActionListener{
         frame.setLayout(null);  
         frame.setVisible(true);
         inputTextField.addKeyListener(new KeyAdapter() {
-		    public void keyReleased(KeyEvent event) {
+
+		    public void keyReleased(KeyEvent event) {	
+
 		 		if(event.getKeyCode()==KeyEvent.VK_ENTER){
-		        	String content = inputTextField.getText();
-		        	//System.out.println(content);
-		        	userInput.append(content);
-		        	inputTextField.setText("");
+		 			
+					synchronized(inputReady) {
+			        	String content = inputTextField.getText();
+			        	//System.out.println(content);
+			        	userInput.append(content);
+			        	inputTextField.setText("");
+			        	inputReady.notify();
+		        	}
 		       	}
 		    }
-		   });	
+		});
 	}
 
 	public void actionPerformed(ActionEvent e) {
-		// Do thing for now
+		System.out.println("action performed!");
 	}
 }

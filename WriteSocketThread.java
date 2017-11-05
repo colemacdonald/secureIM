@@ -30,14 +30,25 @@ class WriteSocketThread implements Runnable
     {
         inputBuffer = new StringBuffer();
         Scanner userInput = new Scanner(System.in);
-        UserInput ui = new UserInput(inputBuffer);
+
+        Object inputReady = new Object();
+        UserInput ui = new UserInput(inputBuffer, inputReady);
         ui.CreateTextField();
 
         while(true)
         {
-            // wait on input
             GeneralHelper.safePrintln("> ");
-            while(inputBuffer.length() == 0);
+
+            // wait on input (without wasting CPU time)
+            synchronized(inputReady) {
+                while (inputBuffer.length() == 0) {
+                    try {
+                        inputReady.wait();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
 
             //inputBuffer.append("\n" + userInput.nextLine());
             GeneralHelper.safePrintln("Thread sees: " + inputBuffer.toString());

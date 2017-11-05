@@ -26,7 +26,6 @@ public class Server {
 
 			while (true) {
 				try {
-					System.out.println("back at the top");
 					Socket clientConnection = server.accept();
 					System.out.println("Client connected!");
 
