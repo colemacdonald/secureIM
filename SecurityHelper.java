@@ -104,18 +104,37 @@ public class SecurityHelper {
         return "";
     }
 
-    static byte[] encryptWithSessionKey(byte[] plaintext, SecretKey sessionKey) {
+    static byte[] encryptWithSessionKey(byte[] plaintext, byte[] initializationVector, SecretKey sessionKey) {
         try {
-            Cipher c = Cipher.getInstance("AES/CBC/NoPadding");
+            IvParameterSpec iv = new IvParameterSpec(initializationVector);
+            Cipher c = Cipher.getInstance("AES/CBC/PKCS5Padding");
 
-            c.init(Cipher.ENCRYPT_MODE, sessionKey);
+            c.init(Cipher.ENCRYPT_MODE, sessionKey, iv);
 
             byte[] cipherText = c.doFinal(plaintext);
         
             return cipherText;
             
         } catch (Exception e) {
-            System.out.println(e);
+            e.printStackTrace();
+            System.exit(0);
+            return null;
+        }
+    }
+
+    static byte[] decryptWithSessionKey(byte[] ciphertext, byte[] initializationVector, SecretKey sessionKey) {
+        try {
+            IvParameterSpec iv = new IvParameterSpec(initializationVector);
+            Cipher c = Cipher.getInstance("AES/CBC/PKCS5Padding");
+
+            c.init(Cipher.DECRYPT_MODE, sessionKey, iv);
+
+            byte[] cipherText = c.doFinal(ciphertext);
+        
+            return cipherText;
+            
+        } catch (Exception e) {
+            e.printStackTrace();
             System.exit(0);
             return null;
         }
@@ -138,7 +157,7 @@ public class SecurityHelper {
             return finalKey;
 
         } catch (Exception e) {
-            System.out.println(e);
+            e.printStackTrace();
             System.exit(0);
             return null;
         }
@@ -147,6 +166,10 @@ public class SecurityHelper {
     public static void main(String[] args) {
         String password = "cailan";
         System.out.println("Password: " + password);
+        
+        SecureRandom random = new SecureRandom();
+        byte[] initializationVector = new byte[16];
+        random.nextBytes(initializationVector);
 
         SecretKey sessionKey = generatePasswordBasedKey(password);
         System.out.println("Key: " + Arrays.toString(sessionKey.getEncoded()));
@@ -154,10 +177,11 @@ public class SecurityHelper {
         String plaintext = "hello, world";
         System.out.println("plaintext: " + plaintext);
 
-        byte[] ciphertext = encryptWithSessionKey(plaintext.getBytes(), sessionKey);
+        byte[] ciphertext = encryptWithSessionKey(plaintext.getBytes(), initializationVector, sessionKey);
         System.out.println("ciphertext: " + Arrays.toString(ciphertext));
-        //byte[] plaintext = "hello, world".getBytes();
 
-        //System.out.println("Encrypted message: " + Arrays.toString(encryptWithSessionKey(plaintext, hashedPassword)));
+        byte[] decryptedText = decryptWithSessionKey(ciphertext, initializationVector, sessionKey);
+        String decryptedString = new String(decryptedText);
+        System.out.println("decrypted text: " + decryptedString);
     }
 }
