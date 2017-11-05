@@ -48,6 +48,8 @@ public class SecurityHelper {
     /*
      * Uses java.security.MessageDigest to compute a SHA-256 hash
      * Returns a string of hex characters
+     *
+     * TODO: Hash with a salt when hashing passwords?
      */
 	static byte[] computeDigest(byte[] message)
 	{
@@ -200,6 +202,10 @@ public class SecurityHelper {
             System.exit(0);
             return null;
         }
+    }
+
+    static byte[] generatePublicPrivateKeypair() {
+        return null;
     }
 
     public static void main(String[] args) {
