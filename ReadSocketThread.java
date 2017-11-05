@@ -29,7 +29,8 @@ class ReadSocketThread implements Runnable
     public void run()
     {
         Scanner msgIn = new Scanner(inStream);
-        for(;;)
+
+        while(true)
         {
             while(!msgIn.hasNext());
 
@@ -44,13 +45,25 @@ class ReadSocketThread implements Runnable
         }   
     }
 
-    public void start () 
+    public void start() 
     {
         GeneralHelper.safePrintln("Starting " +  threadName );
         if(t == null) 
         {
             t = new Thread(this, threadName);
             t.start();
+        }
+    }
+
+    public void join() throws InterruptedException
+    {
+        if (t != null)
+        {
+            try {
+                t.join();
+            } catch (InterruptedException e) {
+                throw e;
+            }
         }
     }
 }

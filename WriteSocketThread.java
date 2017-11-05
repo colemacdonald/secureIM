@@ -33,7 +33,7 @@ class WriteSocketThread implements Runnable
         UserInput ui = new UserInput(inputBuffer);
         ui.CreateTextField();
 
-        for(;;)
+        while(true)
         {
             // wait on input
             GeneralHelper.safePrintln("> ");
@@ -43,9 +43,8 @@ class WriteSocketThread implements Runnable
             GeneralHelper.safePrintln("Thread sees: " + inputBuffer.toString());
 
             inputBuffer.setLength(0);
-        }   
+        }
     }
-
 
     public void start() 
     {
@@ -54,6 +53,18 @@ class WriteSocketThread implements Runnable
         {
             t = new Thread(this, threadName);
             t.start();
+        }
+    }
+
+    public void join() throws InterruptedException
+    {
+        if (t != null)
+        {
+            try {
+                t.join();
+            } catch (InterruptedException e) {
+                throw e;
+            }
         }
     }
 }

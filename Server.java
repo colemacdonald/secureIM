@@ -26,6 +26,7 @@ public class Server {
 
 			while (true) {
 				try {
+					System.out.println("back at the top");
 					Socket clientConnection = server.accept();
 					System.out.println("Client connected!");
 
@@ -51,7 +52,15 @@ public class Server {
 
 					WriteSocketThread sendMessageThread = new WriteSocketThread("send-messages", userInputStream);
 					sendMessageThread.start();
-
+					/*
+					try {
+						receiveMessageThread.join();
+						sendMessageThread.join();
+						System.out.println("Both threads joined??");
+					} catch (InterruptedException e) {
+						System.out.println(e);
+						continue;
+					} */
 				} catch (java.net.SocketException e) {
 					System.out.println(e);
 				}
