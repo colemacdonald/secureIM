@@ -102,11 +102,11 @@ public class Server {
 									String[] entries = line.split(",");
 
 									if (entries[0].equals(usernameFromClient)) {
-										if (entries[1] != hashedPasswordFromClient) {
+										if (entries[1].equals(hashedPasswordFromClient)) {
+											System.out.println("User " + usernameFromClient + " logged in succesfully");
+										} else {
 											// TODO: send this to the Client
 											System.out.println("Incorrect password from Client!");
-										} else {
-											System.out.println("User " + usernameFromClient + " logged in succesfully");
 										}
 
 										break;

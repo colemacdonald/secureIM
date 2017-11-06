@@ -37,14 +37,14 @@ class ReadSocketThread implements Runnable
         {
             while(!msgIn.hasNext());
 
-            if(msgIn.hasNext())
-            {
-                byte[] msg = {};//msgIn.next();
-                String plainMsg = "";//SecurityHelper.parseMessage(msg, true, true, true);
-                DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-                Date date = new Date();
-                GeneralHelper.safePrintln(dateFormat.format(date) + " - " + plainMsg);
-            }
+            // if(msgIn.hasNext())
+            // {
+            //     byte[] msg = {};//msgIn.next();
+            //     String plainMsg = "";//SecurityHelper.parseMessage(msg, true, true, true);
+            //     DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+            //     Date date = new Date();
+            //     GeneralHelper.safePrintln(dateFormat.format(date) + " - " + plainMsg);
+            // }
         }   
     }
 
