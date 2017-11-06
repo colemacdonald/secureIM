@@ -8,6 +8,10 @@ import java.net.*;
 import java.io.*;
 import java.util.*;
 import javax.xml.bind.DatatypeConverter;
+import java.security.*;
+import java.security.spec.*;
+import javax.crypto.*;
+import javax.crypto.spec.*;
 
 public class Client {
 
@@ -74,9 +78,27 @@ public class Client {
 			PrintStream printStream = new PrintStream(outStream, true);
 			printStream.println("testing send");
 
-			ReadSocketThread receiveMessageThread = new ReadSocketThread("client-read", inStream, modes);
+			/* TESTING MSG SEND */
 
-			WriteSocketThread sendMessageThread = new WriteSocketThread("client-write", outStream, modes);
+			String password = "password";
+			SecureRandom random = new SecureRandom();
+			byte[] initializationVector = {-18, 8, -18, -62, -95, -64, 36, -17, -67, 67, 87, 25, -18, -15, -38, 81};//new byte[16];
+			//random.nextBytes(initializationVector);
+	
+			// SecretKey sessionKey = SecurityHelper.generatePasswordBasedKey(password);
+			// String encodedKey = Base64.getEncoder().encodeToString(sessionKey.getEncoded());
+			// System.out.println(encodedKey);
+			byte[] decodedKey = Base64.getDecoder().decode("B0FZlSHiUEKsInRxJCJwm7yXXy7MpcVpX6yCxBGjrCw=");
+			// rebuild key using SecretKeySpec
+			SecretKey sessionKey = new SecretKeySpec(decodedKey, 0, decodedKey.length, "AES");
+
+			ReadSocketThread receiveMessageThread = new ReadSocketThread("receive-messages", 
+				inStream, modes, sessionKey, sessionKey, initializationVector);
+			receiveMessageThread.start();
+
+			WriteSocketThread sendMessageThread = new WriteSocketThread("send-messages", outStream,
+				modes, sessionKey, sessionKey, initializationVector);
+			sendMessageThread.start();
 
 			while(true);
 		} catch (Exception e) {

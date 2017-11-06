@@ -1,6 +1,8 @@
 //package secureIM;
 
 import java.net.*;
+import java.security.*;
+import javax.crypto.*;
 import java.io.*;
 import java.util.*;
 import java.util.Arrays;
@@ -21,12 +23,19 @@ class ReadSocketThread implements Runnable
     private String threadName;
     private InputStream inStream;
     private HashMap<String, Boolean> modes;
+    SecretKey sessionKey;
+    SecretKey privateKey;
+    byte[] iv;
 
-    ReadSocketThread(String _threadName, InputStream _inStream, HashMap<String, Boolean> _modes)
+    ReadSocketThread(String _threadName, InputStream _inStream, HashMap<String, Boolean> _modes, 
+        SecretKey _sessionKey, SecretKey _privateKey, byte[] _iv)
     {
         this.inStream = _inStream;
         this.threadName = _threadName;
         this.modes = _modes;
+        this.sessionKey = _sessionKey;
+        this.privateKey = _privateKey;
+        this.iv = _iv;
     }
 
     public void run()
@@ -37,14 +46,15 @@ class ReadSocketThread implements Runnable
         {
             while(!msgIn.hasNext());
 
-            // if(msgIn.hasNext())
-            // {
-            //     byte[] msg = {};//msgIn.next();
-            //     String plainMsg = "";//SecurityHelper.parseMessage(msg, true, true, true);
-            //     DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-            //     Date date = new Date();
-            //     GeneralHelper.safePrintln(dateFormat.format(date) + " - " + plainMsg);
-            // }
+            if(msgIn.hasNext())
+            {
+                String msg = msgIn.next();
+                GeneralHelper.safePrintln("Received: " + msg);
+                String plainMsg = SecurityHelper.parseAndDecryptMessage(msg, modes, sessionKey, privateKey, iv);
+                DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+                Date date = new Date();
+                GeneralHelper.safePrintln("< " + dateFormat.format(date) + " - " + plainMsg);
+            }
         }   
     }
 
