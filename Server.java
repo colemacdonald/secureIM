@@ -34,6 +34,49 @@ public class Server {
 		return true;
 	}
 
+	static void addNewUser(String username, String passwordHash) {
+		try {
+			FileWriter passwordWriter = new FileWriter("shared_data/user_hashed_passwords.csv", true);
+			passwordWriter.write(username + "," + passwordHash + "\n");
+			passwordWriter.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.exit(0);
+		}
+	}
+
+	static boolean verifyExistingUser(String username, String passwordHash) {
+		try {
+			String passwordFile = "shared_data/user_hashed_passwords.csv";
+			BufferedReader sessionKeyReader = new BufferedReader(new FileReader(passwordFile));
+
+			String line = sessionKeyReader.readLine();
+			while (line != null) {
+				String[] entries = line.split(",");
+
+				if (entries[0].equals(username)) {
+					if (entries[1].equals(passwordHash)) {
+						System.out.println("User " + username + " logged in succesfully");
+						return true;
+					} else {
+						// TODO: send this to the Client
+						System.out.println("Incorrect password from Client!");
+						return false;
+					}
+				}
+			}
+
+			// TODO: send this to the Client
+			System.out.println("User does not exist!");
+			return false;
+
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.exit(0);
+			return false;
+		}
+	}
+
 	public static void main(String[] args) {
 		HashMap<String, Boolean> modes = GeneralHelper.parseCommandLine(args);
 
@@ -87,44 +130,9 @@ public class Server {
 					if (modes.get("confidentiality")) {
 						if (newOrExisting.equals("New")) {
 							//TODO: check if the username already exists
-							try {
-								FileWriter passwordWriter = new FileWriter("shared_data/user_hashed_passwords.csv", true);
-								passwordWriter.write(usernameFromClient + "," + hashedPasswordFromClient + "\n");
-								passwordWriter.close();
-							} catch (IOException e) {
-								e.printStackTrace();
-								System.exit(0);
-							}
+							addNewUser(usernameFromClient, hashedPasswordFromClient);
 						} else if (newOrExisting.equals("Existing")) {
-							// Verify session key
-							try {
-								String passwordFile = "shared_data/user_hashed_passwords.csv";
-								BufferedReader sessionKeyReader = new BufferedReader(new FileReader(passwordFile));
-
-								String line = sessionKeyReader.readLine();
-								while (line != null) {
-									String[] entries = line.split(",");
-
-									if (entries[0].equals(usernameFromClient)) {
-										if (entries[1].equals(hashedPasswordFromClient)) {
-											System.out.println("User " + usernameFromClient + " logged in succesfully");
-										} else {
-											// TODO: send this to the Client
-											System.out.println("Incorrect password from Client!");
-										}
-
-										break;
-									}
-								}
-
-								if (line == null) {
-									// TODO: send this to the Client
-									System.out.println("User does not exist!");
-								}
-							} catch (IOException e) {
-								e.printStackTrace();
-								System.exit(0);
-							}
+							verifyExistingUser(usernameFromClient, hashedPasswordFromClient);
 						} else {
 							System.out.println("Client did not follow protocol, exiting");
 							System.exit(0);
