@@ -107,15 +107,19 @@ public class Client {
 		return passwordHashString;
 	}
 
-	static SecretKey handleSessionKeyExchange(String passwordHash) {
+	// returns session key/initialization vector pair
+	static GeneralHelper.SessionKeyIVPair handleSessionKeyExchange(String passwordHash) {
 		SecretKey key = SecurityHelper.generatePasswordBasedKey(passwordHash);
 		String keyHexString = DatatypeConverter.printHexBinary(key.getEncoded());
 
-		String message = "SessionKey:" + keyHexString;
+		SecureRandom random = new SecureRandom();
+		byte[] initializationVector = new byte[16];
+		random.nextBytes(initializationVector);
+		String initializationVectorHexString = DatatypeConverter.printHexBinary(initializationVector);
+
+		String message = "SessionKey:" + keyHexString + "," + initializationVectorHexString;
 
 		// TODO important: encrypt this message with server's public key!
-
-		System.out.println("Sending session key message: " + message);
 
 		PrintStream outputToServer = new PrintStream(serverOutputStream);
 		outputToServer.println(message);
@@ -123,11 +127,12 @@ public class Client {
 		Scanner serverResponseScanner = new Scanner(serverInputStream);
 		String serverResponse = serverResponseScanner.nextLine();
 
-		System.out.println("Received session key message: " + serverResponse);
+		System.out.println("Session key: " + keyHexString);
+		System.out.println("IV: " + initializationVectorHexString);
 
 		if (serverResponse.startsWith("Success:sessionkey")) {
 			System.out.println("Session key exchange succeeded");
-			return key;
+			return new GeneralHelper.SessionKeyIVPair(key, initializationVector);
 		} else if (serverResponse.startsWith("Failure:sessionkey")) {
 			System.out.println("Session key exchange failed, exiting");
 			System.exit(0);
@@ -151,7 +156,7 @@ public class Client {
 			String passwordHash = handleLogin(modes.get("newUser"));
 
 			if (modes.get("confidentiality")) {
-				SecretKey sessionKey = handleSessionKeyExchange(passwordHash);
+				GeneralHelper.SessionKeyIVPair sessionKeyIVPair = handleSessionKeyExchange(passwordHash);
 			}
 
 			/* TESTING MSG SEND */

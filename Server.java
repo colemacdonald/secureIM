@@ -136,22 +136,32 @@ public class Server {
 		return hashedPasswordFromClient;
 	}
 
-	// Returns session key
-	static SecretKey handleSessionKeyExchange() {
+	// Returns session key/initialization vector pair
+	static GeneralHelper.SessionKeyIVPair handleSessionKeyExchange() {
 		Scanner clientMessageScanner = new Scanner(clientInputStream);
 		String clientMessage = clientMessageScanner.nextLine();
 
 		// TODO important: decrypt client message with server private key!
 
 		String messageHeader = "SessionKey:";
+		int headerLength = messageHeader.length();
 		if (clientMessage.startsWith(messageHeader)) {
-			String sessionKeyHexString = clientMessage.substring(messageHeader.length());
+			String messageBody = clientMessage.substring(messageHeader.length());
+			int commaIndex = messageBody.indexOf(',');
+
+			String sessionKeyHexString = messageBody.substring(0, commaIndex);
+			String initializationVectorHexString = messageBody.substring(commaIndex + 1);
+			System.out.println("Session key: " + sessionKeyHexString);
+			System.out.println("IV: " + initializationVectorHexString);
 
 			byte[] sessionKeyBytes = DatatypeConverter.parseHexBinary(sessionKeyHexString);
 			SecretKey sessionKey = new SecretKeySpec(sessionKeyBytes, 0, sessionKeyBytes.length, "AES");
 
+			byte[] initializationVector = DatatypeConverter.parseHexBinary(initializationVectorHexString);
+
 			respondSuccess("sessionkey");
-			return sessionKey;
+
+			return new GeneralHelper.SessionKeyIVPair(sessionKey, initializationVector);
 		} else {
 			System.out.println("Client did not follow protocol");
 			respondFailure("sessionkey");
@@ -196,7 +206,7 @@ public class Server {
 					String hashedPasswordFromClient = handleUserLogin();
 
 					if (modes.get("confidentiality")) {
-						SecretKey sessionKey = handleSessionKeyExchange();
+						GeneralHelper.SessionKeyIVPair sessionKeyIVPair = handleSessionKeyExchange();
 					}
 
 					if (modes.get("integrity") || modes.get("authentication")) {
