@@ -204,7 +204,7 @@ public class SecurityHelper {
         }
     }
 
-    static byte[] generatePublicPrivateKeypair() {
+    static byte[] generateUserKeypair() {
         return null;
     }
 

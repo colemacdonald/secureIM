@@ -4,8 +4,7 @@ import java.net.*;
 import java.security.*;
 import javax.crypto.*;
 import java.io.*;
-import java.util.Arrays;
-import java.util.Scanner;
+import java.util.*;
 import java.lang.Thread;
 import java.lang.StringBuffer;
 
@@ -19,11 +18,13 @@ class WriteSocketThread implements Runnable
     private String threadName;
     private OutputStream outputStream;
     private StringBuffer inputBuffer;
+    private HashMap<String, Boolean> modes;
 
-    WriteSocketThread(String _threadName, OutputStream _outputStream)
+    WriteSocketThread(String _threadName, OutputStream _outputStream, HashMap<String, Boolean> _modes)
     {
         this.outputStream = _outputStream;
         this.threadName = _threadName;
+        this.modes = _modes;
     }
 
     public void run()
@@ -43,6 +44,7 @@ class WriteSocketThread implements Runnable
             synchronized(inputReady) {
                 while (inputBuffer.length() == 0) {
                     try {
+                        // This is signalled within UserInput.java
                         inputReady.wait();
                     } catch (InterruptedException e) {
                         e.printStackTrace();
