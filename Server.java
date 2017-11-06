@@ -18,14 +18,14 @@ public class Server {
 	static OutputStream clientOutputStream;
 	static InputStream clientInputStream;
 
-	static void respondSuccess() {
+	static void respondSuccess(String action) {
 		PrintStream outputToClient = new PrintStream(clientOutputStream, true);
-		outputToClient.println("Success");
+		outputToClient.println("Success:" + action);
 	}
 
-	static void respondFailure() {
+	static void respondFailure(String action) {
 		PrintStream outputToClient = new PrintStream(clientOutputStream, true);
-		outputToClient.println("Failure");
+		outputToClient.println("Failure" + action);
 	}
 
 	static boolean validateClientInput(String newOrExisting, String usernameField, String passwordField) {
@@ -51,11 +51,11 @@ public class Server {
 			passwordWriter.write(username + "," + passwordHash + "\n");
 			passwordWriter.close();
 
-			respondSuccess();
+			respondSuccess("signup");
 			return true;
 		} catch (IOException e) {
 			e.printStackTrace();
-			respondFailure();
+			respondFailure("signup");
 			System.exit(0);
 			return false;
 		}
@@ -73,59 +73,92 @@ public class Server {
 				if (entries[0].equals(username)) {
 					if (entries[1].equals(passwordHash)) {
 						System.out.println("User " + username + " logged in succesfully");
-						respondSuccess();
+						respondSuccess("login");
 						return true;
 					} else {
 						System.out.println("Incorrect password from Client!");
-						respondFailure();
+						respondFailure("login");
 						return false;
 					}
 				}
 			}
 
 			System.out.println("User does not exist!");
-			respondFailure();
+			respondFailure("login");
 			return false;
 
 		} catch (IOException e) {
 			e.printStackTrace();
-			respondFailure();
+			respondFailure("login");
 			System.exit(0);
 			return false;
 		}
 	}
 
-	// Returns hashed password, or empty string if their login failed (wrong password, etc)
+	// Returns hashed password
 	static String handleUserLogin() {
-		Scanner clientInputScanner = new Scanner(clientInputStream);
-		String newOrExisting = clientInputScanner.nextLine();
-		String usernameFromClient = clientInputScanner.nextLine();
-		String hashedPasswordFromClient = clientInputScanner.nextLine();
+		String hashedPasswordFromClient;
 
-		if (!validateClientInput(newOrExisting, usernameFromClient, hashedPasswordFromClient)) {
-			System.out.println("Client did not follow correct protocol, exiting");
-			System.exit(0);
-		}
+		boolean successful = false;
+		do {
+			Scanner clientInputScanner = new Scanner(clientInputStream);
+			String newOrExisting = clientInputScanner.nextLine();
+			String usernameFromClient = clientInputScanner.nextLine();
+			hashedPasswordFromClient = clientInputScanner.nextLine();
 
-		usernameFromClient = usernameFromClient.substring("Username:".length());
-		hashedPasswordFromClient = hashedPasswordFromClient.substring("Password:".length());
+			if (!validateClientInput(newOrExisting, usernameFromClient, hashedPasswordFromClient)) {
+				System.out.println("Client did not follow correct protocol, exiting");
+				System.exit(0);
+			}
 
-		if (newOrExisting.equals("New")) {
-			if (!addNewUser(usernameFromClient, hashedPasswordFromClient)) {
+			usernameFromClient = usernameFromClient.substring("Username:".length());
+			hashedPasswordFromClient = hashedPasswordFromClient.substring("Password:".length());
+
+			if (newOrExisting.equals("New")) {
+				if (!addNewUser(usernameFromClient, hashedPasswordFromClient)) {
+					continue;
+				}
+			} else if (newOrExisting.equals("Existing")) {
+				if (!verifyExistingUser(usernameFromClient, hashedPasswordFromClient)) {
+					continue;
+				}
+			} else {
+				System.out.println("Client did not follow protocol");
+				respondFailure("login");
+				System.exit(0);
 				return "";
 			}
-		} else if (newOrExisting.equals("Existing")) {
-			if (!verifyExistingUser(usernameFromClient, hashedPasswordFromClient)) {
-				return "";
-			}
+
+			successful = true;
+
+		} while(!successful);
+
+		return hashedPasswordFromClient;
+	}
+
+	// Returns session key
+	static SecretKey handleSessionKeyExchange() {
+		Scanner clientMessageScanner = new Scanner(clientInputStream);
+		String clientMessage = clientMessageScanner.nextLine();
+
+		// TODO important: decrypt client message with server private key!
+
+		String messageHeader = "SessionKey:";
+		if (clientMessage.startsWith(messageHeader)) {
+			String sessionKeyHexString = clientMessage.substring(messageHeader.length());
+
+			byte[] sessionKeyBytes = DatatypeConverter.parseHexBinary(sessionKeyHexString);
+			SecretKey sessionKey = new SecretKeySpec(sessionKeyBytes, 0, sessionKeyBytes.length, "AES");
+
+			respondSuccess("sessionkey");
+			return sessionKey;
 		} else {
 			System.out.println("Client did not follow protocol");
-			respondFailure();
+			respondFailure("sessionkey");
+			//TODO: don't just exit? keep server up to try again?
 			System.exit(0);
+			return null;
 		}
-
-		// TODO: deal with failed user login/signup, on server side
-		return hashedPasswordFromClient;
 	}
 
 	public static void main(String[] args) {
@@ -160,13 +193,10 @@ public class Server {
 					}
 					*/
 
-					String hashedPasswordFromClient = "";
-					while (hashedPasswordFromClient.length() == 0) {
-						hashedPasswordFromClient = handleUserLogin();
-					}
+					String hashedPasswordFromClient = handleUserLogin();
 
 					if (modes.get("confidentiality")) {
-								
+						SecretKey sessionKey = handleSessionKeyExchange();
 					}
 
 					if (modes.get("integrity") || modes.get("authentication")) {
@@ -175,29 +205,29 @@ public class Server {
 
 					/* TESTING MSG SEND */
 
-					//String password = "password";
-					SecureRandom random = new SecureRandom();
-					byte[] initializationVector = {-18, 8, -18, -62, -95, -64, 36, -17, -67, 67, 87, 25, -18, -15, -38, 81};//new byte[16];
-					//random.nextBytes(initializationVector);
+					// //String password = "password";
+					// SecureRandom random = new SecureRandom();
+					// byte[] initializationVector = {-18, 8, -18, -62, -95, -64, 36, -17, -67, 67, 87, 25, -18, -15, -38, 81};//new byte[16];
+					// //random.nextBytes(initializationVector);
 
-					System.out.println(Arrays.toString(initializationVector));
+					// //System.out.println(Arrays.toString(initializationVector));
 			
-					SecretKey sessionKey = SecurityHelper.generatePasswordBasedKey(hashedPasswordFromClient);
-					// String encodedKey = Base64.getEncoder().encodeToString(sessionKey.getEncoded());
-					// System.out.println(encodedKey);
+					// //SecretKey sessionKey = SecurityHelper.generatePasswordBasedKey(hashedPasswordFromClient);
+					// // String encodedKey = Base64.getEncoder().encodeToString(sessionKey.getEncoded());
+					// // System.out.println(encodedKey);
 
-					//byte[] decodedKey = Base64.getDecoder().decode("B0FZlSHiUEKsInRxJCJwm7yXXy7MpcVpX6yCxBGjrCw=");
-					// rebuild key using SecretKeySpec
-					//SecretKey sessionKey = new SecretKeySpec(decodedKey, 0, decodedKey.length, "AES");
+					// //byte[] decodedKey = Base64.getDecoder().decode("B0FZlSHiUEKsInRxJCJwm7yXXy7MpcVpX6yCxBGjrCw=");
+					// // rebuild key using SecretKeySpec
+					// //SecretKey sessionKey = new SecretKeySpec(decodedKey, 0, decodedKey.length, "AES");
 
 
-					ReadSocketThread receiveMessageThread = new ReadSocketThread("receive-messages", 
-						clientInputStream, modes, sessionKey, sessionKey, initializationVector);
-					receiveMessageThread.start();
+					// ReadSocketThread receiveMessageThread = new ReadSocketThread("receive-messages", 
+					// 	clientInputStream, modes, sessionKey, sessionKey, initializationVector);
+					// receiveMessageThread.start();
 
-					WriteSocketThread sendMessageThread = new WriteSocketThread("send-messages",
-						clientOutputStream, modes, sessionKey, sessionKey, initializationVector);
-					sendMessageThread.start();
+					// WriteSocketThread sendMessageThread = new WriteSocketThread("send-messages",
+					// 	clientOutputStream, modes, sessionKey, sessionKey, initializationVector);
+					// sendMessageThread.start();
 					/*
 					try {
 						receiveMessageThread.join();
