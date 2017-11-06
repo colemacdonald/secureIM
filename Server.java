@@ -207,37 +207,24 @@ public class Server {
 
 					if (modes.get("confidentiality")) {
 						GeneralHelper.SessionKeyIVPair sessionKeyIVPair = handleSessionKeyExchange();
+
+						ReadSocketThread receiveMessageThread = new ReadSocketThread("receive-messages", 
+								clientInputStream, modes, sessionKeyIVPair.sessionKey, null, 
+								sessionKeyIVPair.initializationVector);
+						receiveMessageThread.start();
+
+						WriteSocketThread sendMessageThread = new WriteSocketThread("send-messages",
+							clientOutputStream, modes, sessionKeyIVPair.sessionKey, null, 
+							sessionKeyIVPair.initializationVector);
+						sendMessageThread.start();
 					}
 
 					if (modes.get("integrity") || modes.get("authentication")) {
 						// Get client's public key
 					}
 
-					/* TESTING MSG SEND */
-
-					// //String password = "password";
-					// SecureRandom random = new SecureRandom();
-					// byte[] initializationVector = {-18, 8, -18, -62, -95, -64, 36, -17, -67, 67, 87, 25, -18, -15, -38, 81};//new byte[16];
-					// //random.nextBytes(initializationVector);
-
-					// //System.out.println(Arrays.toString(initializationVector));
-			
-					// //SecretKey sessionKey = SecurityHelper.generatePasswordBasedKey(hashedPasswordFromClient);
-					// // String encodedKey = Base64.getEncoder().encodeToString(sessionKey.getEncoded());
-					// // System.out.println(encodedKey);
-
-					// //byte[] decodedKey = Base64.getDecoder().decode("B0FZlSHiUEKsInRxJCJwm7yXXy7MpcVpX6yCxBGjrCw=");
-					// // rebuild key using SecretKeySpec
-					// //SecretKey sessionKey = new SecretKeySpec(decodedKey, 0, decodedKey.length, "AES");
 
 
-					// ReadSocketThread receiveMessageThread = new ReadSocketThread("receive-messages", 
-					// 	clientInputStream, modes, sessionKey, sessionKey, initializationVector);
-					// receiveMessageThread.start();
-
-					// WriteSocketThread sendMessageThread = new WriteSocketThread("send-messages",
-					// 	clientOutputStream, modes, sessionKey, sessionKey, initializationVector);
-					// sendMessageThread.start();
 					/*
 					try {
 						receiveMessageThread.join();
