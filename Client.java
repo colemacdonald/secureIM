@@ -15,18 +15,20 @@ import javax.crypto.spec.*;
 
 public class Client {
 
-	static void handleLogin(boolean newUser, OutputStream outStream) {
+	// Returns the hashed password of the user
+	static byte[] handleLogin(boolean newUser, OutputStream clientOutputStream, InputStream clientInputStream) {
 		Scanner sc = new Scanner(System.in);
-		PrintStream outputToServer = new PrintStream(outStream);
+		PrintStream outputToServer = new PrintStream(clientOutputStream);
 
 		String qualifier = newUser ? "a" : "your";
 
 		boolean successful = false;
+		byte[] passwordHash = {};
 
 		while (!successful) {
 			System.out.print("Please enter " + qualifier + " username: ");
 			String username = sc.nextLine();
-
+			
 			String plaintextPassword;
 
 			Console console = System.console();
@@ -48,32 +50,66 @@ public class Client {
 				plaintextPassword = String.valueOf(password1);
 			}
 
-			byte[] passwordHash = SecurityHelper.computeDigest(plaintextPassword.getBytes());
+			if (plaintextPassword.length() < 8) {
+				System.out.println("Password must be at least 8 characters, please try again");
+				continue;
+			}
+
+			passwordHash = SecurityHelper.computeDigest(plaintextPassword.getBytes());
 			String passwordHashString = DatatypeConverter.printHexBinary(passwordHash);
 
-			// TODO: Send this to server (encrypted with server's public key), rather than writing to shared file
 			if (newUser) {
 				outputToServer.println("New");
 			} else {
 				outputToServer.println("Existing");
 			}
 			outputToServer.println("Username:" + username);
+			// TODO: Encrypted with server's public key
 			outputToServer.println("Password:" + passwordHashString);
 			outputToServer.flush();
 
-			successful = true;
+			Scanner clientResponseScanner = new Scanner(clientInputStream);
+			String response = clientResponseScanner.nextLine();
+			
+			if (response.equals("Success")) {
+				if (newUser) {
+					System.out.println("Account created successfully!");
+				} else {
+					System.out.println("Logged in successfully");
+				}
+				successful = true;
+			} else if (response.equals("Failure")) {
+				// TODO: more informative error messages
+				if (newUser) {
+					System.out.println("Account creation failed, please try again");
+				} else {
+					System.out.println("Log in failed, please try again");
+				}
+				continue;
+			} else {
+				System.out.println("Received unexpected message from Server: " + response);
+				System.out.println("Exiting");
+				System.exit(0);
+			}
 		}
+
+		if (passwordHash.length == 0) {
+			System.out.println("Something went wrong with login handling, exiting");
+			System.exit(0);
+		}
+		
+		return passwordHash;
 	}
 
 	public static void main(String[] args) {
-		HashMap<String, Boolean> modes = GeneralHelper.parseCommandLine(args);		
+		HashMap<String, Boolean> modes = GeneralHelper.parseCommandLine(args);
 
 		try {
 			Socket serverConnection = new Socket("localhost", 8080);
 			OutputStream outStream = serverConnection.getOutputStream();
 			InputStream inStream = serverConnection.getInputStream();
 
-			handleLogin(modes.get("newUser"), outStream);
+			byte[] passwordHash = handleLogin(modes.get("newUser"), outStream, inStream);
 
 			PrintStream printStream = new PrintStream(outStream, true);
 			printStream.println("testing send");
@@ -88,9 +124,9 @@ public class Client {
 			// SecretKey sessionKey = SecurityHelper.generatePasswordBasedKey(password);
 			// String encodedKey = Base64.getEncoder().encodeToString(sessionKey.getEncoded());
 			// System.out.println(encodedKey);
-			byte[] decodedKey = Base64.getDecoder().decode("B0FZlSHiUEKsInRxJCJwm7yXXy7MpcVpX6yCxBGjrCw=");
+			//byte[] decodedKey = Base64.getDecoder().decode("B0FZlSHiUEKsInRxJCJwm7yXXy7MpcVpX6yCxBGjrCw=");
 			// rebuild key using SecretKeySpec
-			SecretKey sessionKey = new SecretKeySpec(decodedKey, 0, decodedKey.length, "AES");
+			SecretKey sessionKey = new SecretKeySpec(passwordHash, 0, passwordHash.length, "AES");
 
 			ReadSocketThread receiveMessageThread = new ReadSocketThread("receive-messages", 
 				inStream, modes, sessionKey, sessionKey, initializationVector);
