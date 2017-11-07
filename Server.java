@@ -101,6 +101,7 @@ public class Server {
 
 		boolean successful = false;
 		do {
+			// Read login information from client
 			Scanner clientInputScanner = new Scanner(clientInputStream);
 			String newOrExisting = clientInputScanner.nextLine();
 			String usernameFromClient = clientInputScanner.nextLine();
@@ -171,19 +172,26 @@ public class Server {
 		}
 	}
 
+
 	public static void main(String[] args) {
 		HashMap<String, Boolean> modes = GeneralHelper.parseCommandLine(args);
-		
+
 		try {
+
+			//PrivateKey privKey = SecurityHelper.storeServerKeyPair();
+
+			// create server socket
 			ServerSocket server = new ServerSocket(8080);
 			server.setReuseAddress(true);
 			System.out.println("Waiting for client...");
 
 			while (true) {
 				try {
+					// wait for client connection
 					Socket clientConnection = server.accept();
 					System.out.println("Client connected!");
 
+					// create streams for the socket
 					clientOutputStream = clientConnection.getOutputStream();
 					clientInputStream = clientConnection.getInputStream();
 
@@ -244,6 +252,9 @@ public class Server {
 		} catch (IOException e) {
 			System.out.println("IOException: " + e);
 			System.exit(0);
-		}		
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.exit(0);
+		}
 	}
 }

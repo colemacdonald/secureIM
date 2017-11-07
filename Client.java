@@ -16,6 +16,8 @@ import javax.crypto.spec.*;
 public class Client {
 	static OutputStream serverOutputStream;
 	static InputStream serverInputStream;
+	private static PrivateKey privKey;
+	private static PublicKey pubKey;
 
 	// Returns the hashed password of the user
 	static String handleLogin(boolean newUser) {
@@ -28,6 +30,8 @@ public class Client {
 
 		boolean successful = false;
 		do {
+
+			// get user's username
 			System.out.print("Please enter " + qualifier + " username: ");
 			String username = sc.nextLine();
 			
@@ -35,6 +39,7 @@ public class Client {
 
 			Console console = System.console();
 
+			// get user's password
 			if (console == null) {
 				System.out.println("WARNING: Your console application does not support concealing password fields!!!");
 				System.out.print("Please enter " + qualifier + " password: ");
@@ -60,6 +65,10 @@ public class Client {
 			byte[] passwordHash = SecurityHelper.computeDigest(plaintextPassword.getBytes());
 			passwordHashString = DatatypeConverter.printHexBinary(passwordHash);
 
+			//privKey = SecurityHelper.storeClientKeyPair(username);
+			//pubKey = GeneralHelper.getServerPublicKey();
+
+			// Send user login information to server
 			if (newUser) {
 				outputToServer.println("New");
 			} else {
@@ -67,12 +76,17 @@ public class Client {
 			}
 			outputToServer.println("Username:" + username);
 			// TODO: Encrypted with server's public key
+
+			//String encryptedPasswordHashString = DatatypeConverter.printHexBinary(SecurityHelper.encryptWithPublicKey(passwordHashString, pubKey));
+
 			outputToServer.println("Password:" + passwordHashString);
 			outputToServer.flush();
 
+			// Wait for login response from server
 			Scanner clientResponseScanner = new Scanner(serverInputStream);
 			String response = clientResponseScanner.nextLine();
 			
+			// Parse server response to login
 			if (newUser) {
 				if (response.startsWith("Success:signup")) {
 					System.out.println("Account created successfully!");
@@ -109,6 +123,7 @@ public class Client {
 
 	// returns session key/initialization vector pair
 	static GeneralHelper.SessionKeyIVPair handleSessionKeyExchange(String passwordHash) {
+
 		SecretKey key = SecurityHelper.generatePasswordBasedKey(passwordHash);
 		String keyHexString = DatatypeConverter.printHexBinary(key.getEncoded());
 
@@ -146,6 +161,7 @@ public class Client {
 	}
 
 	public static void main(String[] args) {
+
 		HashMap<String, Boolean> modes = GeneralHelper.parseCommandLine(args);
 
 		try {
