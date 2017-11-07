@@ -10,6 +10,7 @@ import java.security.*;
 import java.security.spec.*;
 import javax.crypto.*;
 import javax.crypto.spec.*;
+import javax.xml.bind.DatatypeConverter;
 
 
 public class SecurityHelper {
@@ -244,7 +245,7 @@ public class SecurityHelper {
         if (clientKeyFile.length() > 0){
             byte[] keyBytes = null;
             BufferedReader buffer = new BufferedReader(new FileReader(userName + "_private_key.key"));
-            keyBytes = buffer.readLine().getBytes();
+            keyBytes = DatatypeConverter.parseBase64Binary(new String(buffer.readLine().getBytes()));
             KeyFactory keyFactory = KeyFactory.getInstance("RSA");
             EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(keyBytes);
             PrivateKey privateKey = keyFactory.generatePrivate(privateKeySpec);
@@ -255,7 +256,7 @@ public class SecurityHelper {
             Base64.Encoder encoder = Base64.getEncoder();
 
             Writer keyFile = new FileWriter(userName + "_private_key.key");
-            keyFile.write(userName + "," + encoder.encodeToString(clientKP.getPrivate().getEncoded()));
+            keyFile.write(encoder.encodeToString(clientKP.getPrivate().getEncoded()));
             keyFile.close();
             keyFile = new FileWriter(PUBLIC_KEY_FILE);
             keyFile.write(userName + "," + encoder.encodeToString(clientKP.getPublic().getEncoded()));
