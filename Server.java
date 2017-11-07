@@ -178,7 +178,7 @@ public class Server {
 
 		try {
 
-			//PrivateKey privKey = SecurityHelper.storeServerKeyPair();
+			//PrivateKey privKey = SecurityHelper.storeKeyPair("server");
 
 			// create server socket
 			ServerSocket server = new ServerSocket(8080);

@@ -3,24 +3,20 @@
  * Security-related helper methods used by both client and server
  */
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.lang.*;
 import java.util.*;
 import java.security.*;
 import java.security.spec.*;
 import javax.crypto.*;
 import javax.crypto.spec.*;
-import java.io.*;
-import java.io.BufferedReader;
-
 
 
 public class SecurityHelper {
 
     static final int DIGEST_LENGTH = 32;
-    static final String PUBLIC_KEY_FILE = "shared_data/trusted_public_keys.csv"
-;
+    static final String PUBLIC_KEY_FILE = "shared_data/trusted_public_keys.csv";
+
     /*
      * Converts a byte array into a hex string
      * Taken from: https://stackoverflow.com/questions/15429257/how-to-convert-byte-array-to-hexstring-in-java
@@ -241,34 +237,7 @@ public class SecurityHelper {
     }
 
 
-    static PrivateKey storeServerKeyPair() throws Exception{
-
-        File serverKeyFile = new File("server_private_key.key");
-        if (serverKeyFile.length() > 0){
-            byte[] keyBytes = null;
-            BufferedReader buffer = new BufferedReader(new FileReader("server_private_key.key"));
-            keyBytes = buffer.readLine().getBytes();
-            KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-            EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(keyBytes);
-            PrivateKey privateKey = keyFactory.generatePrivate(privateKeySpec);
-            return privateKey;
-        } 
-        else {            
-            KeyPair serverKP = generateUserKeyPair();
-            Base64.Encoder encoder = Base64.getEncoder();
-
-            Writer keyFile = new FileWriter("server_private_key.key");
-            keyFile.write(encoder.encodeToString(serverKP.getPrivate().getEncoded()));
-            keyFile.close();
-            keyFile = new FileWriter(PUBLIC_KEY_FILE);
-            keyFile.write("server," + encoder.encodeToString(serverKP.getPublic().getEncoded()));
-            keyFile.close();
-            return serverKP.getPrivate();          
-        }
-    }
-
-
-    static PrivateKey storeClientKeyPair(String userName) throws Exception{
+    static PrivateKey storeKeyPair(String userName) throws Exception{
 
         File clientKeyFile = new File(userName + "_private_key.key");
 

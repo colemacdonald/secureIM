@@ -65,7 +65,7 @@ public class Client {
 			byte[] passwordHash = SecurityHelper.computeDigest(plaintextPassword.getBytes());
 			passwordHashString = DatatypeConverter.printHexBinary(passwordHash);
 
-			//privKey = SecurityHelper.storeClientKeyPair(username);
+			//privKey = SecurityHelper.storeKeyPair(username);
 			//pubKey = GeneralHelper.getServerPublicKey();
 
 			// Send user login information to server
