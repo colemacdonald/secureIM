@@ -46,7 +46,7 @@ class WriteSocketThread implements Runnable
 
         PrintStream socketWrite = new PrintStream(outputStream);
 
-        while(true)
+        while(!Thread.currentThread().isInterrupted())
         {
             // wait on input (without wasting CPU time)
             //synchronized(inputReady) {
@@ -81,6 +81,12 @@ class WriteSocketThread implements Runnable
                 //}
             //}
         }
+        System.out.println("write out");
+    }
+
+    public void stop()
+    {
+        Thread.currentThread().interrupt();
     }
 
     public void start() 

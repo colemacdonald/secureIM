@@ -1,7 +1,7 @@
 all:
 	javac GeneralHelper.java
 	javac SecurityHelper.java
-	javac UserInput.java
+	javac MessagingWindow.java
 	javac WriteSocketThread.java
 	javac ReadSocketThread.java
 	javac Server.java

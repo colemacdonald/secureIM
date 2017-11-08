@@ -202,6 +202,9 @@ public class Server {
 			server.setReuseAddress(true);
 			System.out.println("Waiting for client...");
 
+			ReadSocketThread receiveMessageThread = null;
+			WriteSocketThread sendMessageThread = null;
+
 			while (true) {
 				try {
 					// wait for client connection
@@ -238,12 +241,12 @@ public class Server {
 
 					MessagingWindow messagingWindow = GeneralHelper.createUI();
 
-					ReadSocketThread receiveMessageThread = new ReadSocketThread("receive-messages", 
+					receiveMessageThread = new ReadSocketThread("receive-messages", 
 							clientInputStream, modes, null, sessionKeyIVPair, messagingWindow);
 
 					receiveMessageThread.start();
 
-					WriteSocketThread sendMessageThread = new WriteSocketThread("send-messages",
+					sendMessageThread = new WriteSocketThread("send-messages",
 						clientOutputStream, modes, null, sessionKeyIVPair, messagingWindow);
 
 					sendMessageThread.start();
@@ -251,8 +254,6 @@ public class Server {
 					if (modes.get("integrity") || modes.get("authentication")) {
 						// Get client's public key
 					}
-
-
 
 					/*
 					try {
