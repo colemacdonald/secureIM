@@ -175,19 +175,19 @@ public class Client {
 
 			String passwordHash = handleLogin(modes.get("newUser"));
 
+			GeneralHelper.SessionKeyIVPair sessionKeyIVPair = new GeneralHelper.SessionKeyIVPair(null, null);
+
 			if (modes.get("confidentiality")) {
-				GeneralHelper.SessionKeyIVPair sessionKeyIVPair = handleSessionKeyExchange(passwordHash);
-
-				ReadSocketThread receiveMessageThread = new ReadSocketThread("receive-messages", 
-						serverInputStream, modes, sessionKeyIVPair.sessionKey, null, 
-						sessionKeyIVPair.initializationVector);
-				receiveMessageThread.start();
-
-				WriteSocketThread sendMessageThread = new WriteSocketThread("send-messages", 
-						serverOutputStream, modes, sessionKeyIVPair.sessionKey, null, 
-						sessionKeyIVPair.initializationVector);
-				sendMessageThread.start();
+				sessionKeyIVPair = handleSessionKeyExchange(passwordHash);
 			}
+
+			ReadSocketThread receiveMessageThread = new ReadSocketThread("receive-messages", 
+					serverInputStream, modes, null, sessionKeyIVPair);
+			receiveMessageThread.start();
+
+			WriteSocketThread sendMessageThread = new WriteSocketThread("send-messages", 
+					serverOutputStream, modes, null, sessionKeyIVPair);
+			sendMessageThread.start();
 
 			while(true);
 		} catch (Exception e) {

@@ -28,14 +28,14 @@ class WriteSocketThread implements Runnable
     byte[] iv;
 
     WriteSocketThread(String _threadName, OutputStream _outputStream, HashMap<String, Boolean> _modes,
-        SecretKey _sessionKey, SecretKey _privateKey, byte[] _iv)
+        SecretKey _privateKey, GeneralHelper.SessionKeyIVPair sessionKeyIVPair)
     {
         this.outputStream = _outputStream;
         this.threadName = _threadName;
         this.modes = _modes;
-        this.sessionKey = _sessionKey;
+        this.sessionKey = sessionKeyIVPair.sessionKey;
         this.privateKey = _privateKey;
-        this.iv = _iv;
+        this.iv = sessionKeyIVPair.initializationVector;
     }
 
     public void run()

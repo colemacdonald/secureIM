@@ -28,14 +28,14 @@ class ReadSocketThread implements Runnable
     byte[] iv;
 
     ReadSocketThread(String _threadName, InputStream _inStream, HashMap<String, Boolean> _modes, 
-        SecretKey _sessionKey, SecretKey _privateKey, byte[] _iv)
+        SecretKey _privateKey, GeneralHelper.SessionKeyIVPair sessionKeyIVPair)
     {
         this.inStream = _inStream;
         this.threadName = _threadName;
         this.modes = _modes;
-        this.sessionKey = _sessionKey;
+        this.sessionKey = sessionKeyIVPair.sessionKey;
         this.privateKey = _privateKey;
-        this.iv = _iv;
+        this.iv = sessionKeyIVPair.initializationVector;
     }
 
     public void run()

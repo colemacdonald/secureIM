@@ -221,19 +221,19 @@ public class Server {
 
 					String hashedPasswordFromClient = handleUserLogin();
 
+					GeneralHelper.SessionKeyIVPair sessionKeyIVPair = new GeneralHelper.SessionKeyIVPair(null, null);
+
 					if (modes.get("confidentiality")) {
-						GeneralHelper.SessionKeyIVPair sessionKeyIVPair = handleSessionKeyExchange();
-
-						ReadSocketThread receiveMessageThread = new ReadSocketThread("receive-messages", 
-								clientInputStream, modes, sessionKeyIVPair.sessionKey, null, 
-								sessionKeyIVPair.initializationVector);
-						receiveMessageThread.start();
-
-						WriteSocketThread sendMessageThread = new WriteSocketThread("send-messages",
-							clientOutputStream, modes, sessionKeyIVPair.sessionKey, null, 
-							sessionKeyIVPair.initializationVector);
-						sendMessageThread.start();
+						sessionKeyIVPair = handleSessionKeyExchange();
 					}
+
+					ReadSocketThread receiveMessageThread = new ReadSocketThread("receive-messages", 
+							clientInputStream, modes, null, sessionKeyIVPair);
+					receiveMessageThread.start();
+
+					WriteSocketThread sendMessageThread = new WriteSocketThread("send-messages",
+						clientOutputStream, modes, null, sessionKeyIVPair);
+					sendMessageThread.start();
 
 					if (modes.get("integrity") || modes.get("authentication")) {
 						// Get client's public key
