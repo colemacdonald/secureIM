@@ -69,6 +69,7 @@ public class Server {
 
 	static boolean verifyExistingUser(String username, String passwordHash) {
 		try {
+			System.out.println("Verifying user identity...");
 			String passwordFile = "shared_data/user_hashed_passwords.csv";
 			BufferedReader sessionKeyReader = new BufferedReader(new FileReader(passwordFile));
 
@@ -90,6 +91,8 @@ public class Server {
 						return false;
 					}
 				}
+
+				line = sessionKeyReader.readLine();
 			}
 
 			System.out.println("User does not exist!");
@@ -233,12 +236,16 @@ public class Server {
 						sessionKeyIVPair = handleSessionKeyExchange();
 					}
 
+					MessagingWindow messagingWindow = GeneralHelper.createUI();
+
 					ReadSocketThread receiveMessageThread = new ReadSocketThread("receive-messages", 
-							clientInputStream, modes, null, sessionKeyIVPair);
+							clientInputStream, modes, null, sessionKeyIVPair, messagingWindow);
+
 					receiveMessageThread.start();
 
 					WriteSocketThread sendMessageThread = new WriteSocketThread("send-messages",
-						clientOutputStream, modes, null, sessionKeyIVPair);
+						clientOutputStream, modes, null, sessionKeyIVPair, messagingWindow);
+
 					sendMessageThread.start();
 
 					if (modes.get("integrity") || modes.get("authentication")) {
