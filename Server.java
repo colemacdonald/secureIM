@@ -79,9 +79,9 @@ public class Server {
 
 				if (entries[0].equals(username)) {
 					// decrypt password hash from client
-					String pass = SecurityHelper.decryptWithPrivateKey(passwordHash, privateKey);
+					String decryptedPasswordHash = SecurityHelper.decryptWithPrivateKey(passwordHash, privateKey);
 
-					if (entries[1].equals(pass)) {
+					if (entries[1].equals(decryptedPasswordHash)) {
 						System.out.println("User " + username + " logged in succesfully");
 						respondSuccess("login");
 						return true;

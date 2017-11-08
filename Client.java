@@ -77,7 +77,7 @@ public class Client {
 			String encryptedPasswordHashString = SecurityHelper.encryptWithPublicKey(passwordHashString, serverPubKey);
 
 			// outputToServer.println("Password:" + encryptedPasswordHashString);
-			outputToServer.println("Password:" + passwordHashString);
+			outputToServer.println("Password:" + encryptedPasswordHashString);
 			outputToServer.flush();
 
 			// Wait for login response from server
