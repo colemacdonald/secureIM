@@ -57,7 +57,7 @@ class WriteSocketThread implements Runnable
 
                         if(userInputBuffer.length() > 0) {
                             String plaintext;
-                            
+
                             synchronized(userInputBuffer) {
                                 plaintext = userInputBuffer.toString();
                                 userInputBuffer.setLength(0);                                
@@ -67,8 +67,6 @@ class WriteSocketThread implements Runnable
                                 sessionKey, sessionKey, iv);
 
                             //GeneralHelper.safePrintln("Sending: " + msg + " - " + SecurityHelper.parseAndDecryptMessage(msg, modes, sessionKey, sessionKey, iv));
-                            
-                            messagingWindow.writeToMessageWindow(plaintext);
 
                             socketWrite.println(msg);
                             socketWrite.flush();

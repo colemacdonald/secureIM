@@ -31,9 +31,7 @@ public class MessagingWindow implements ActionListener {
 	}
 
 	public synchronized void writeToMessageWindow(String message) {
-		System.out.println("Writing to message window: " + message);
 		messageDisplayArea.append(message + "\n");
-		System.out.println("Wrote message: " + message);
 	}
 
 	private void createTextField() {
@@ -65,7 +63,7 @@ public class MessagingWindow implements ActionListener {
 					//synchronized(inputReady) {
 						String content = inputTextField.getText();
 
-						messageDisplayArea.append(content);
+						writeToMessageWindow(content);
 			        	//System.out.println(content);
 			        	userInputBuffer.append(content);
 			        	inputTextField.setText("");
