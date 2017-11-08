@@ -257,6 +257,8 @@ public class SecurityHelper {
         }
     }
 
+    // Stores a key pair for the given user and returns the private key. 
+    // If user already has a stored key pair, returns the existing private key.
     static PrivateKey storeKeyPair(String userName) throws Exception{
 
         File clientKeyFile = new File(userName + "_private_key.key");
@@ -283,20 +285,16 @@ public class SecurityHelper {
             Base64.Encoder encoder = Base64.getEncoder();
 
             Writer keyFile = new FileWriter(userName + "_private_key.key");
-            //FileOutputStream keyFile = new FileOutputStream(userName + "_private_key.key");
             keyFile.write(encoder.encodeToString(clientKP.getPrivate().getEncoded()));
-            //keyFile.write(encoder.encodeToString(clientKP.getPrivate().getEncoded()));
             keyFile.close();
-            //keyFile = new FileOutputStream(PUBLIC_KEY_FILE);
             keyFile = new FileWriter(PUBLIC_KEY_FILE);
             keyFile.write(userName + "," + encoder.encodeToString(clientKP.getPublic().getEncoded()));
-            //keyFile.write(userName + "," + encoder.encodeToString(clientKP.getPublic().getEncoded()));
             keyFile.close();
             return clientKP.getPrivate();
         }
     }
 
-    // searches through shared user password hash file and return whether or not provided username already exists
+    // Searches through shared user password hash file and return whether or not provided username already exists
     static boolean userExists(String userName) {
 
         try {
@@ -320,7 +318,7 @@ public class SecurityHelper {
         }
     }
 
-
+    // Returns given username's public key from shared key-store
     static PublicKey getUserPublicKey(String userName) throws Exception{
         BufferedReader keys = new BufferedReader(new FileReader(PUBLIC_KEY_FILE));
         String line;
