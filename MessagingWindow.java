@@ -49,6 +49,8 @@ public class MessagingWindow implements ActionListener {
 		Dimension d = new Dimension(300, 300);
 		scrollPane.setPreferredSize(d);
 		scrollPane.setBounds(30, 30, 340, 200);
+
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().add(scrollPane, BorderLayout.CENTER);
         frame.add(inputTextField);
         frame.setSize(400, 400);
@@ -73,6 +75,10 @@ public class MessagingWindow implements ActionListener {
 		    }
 		});
 	}	
+
+	public void close() {
+		this.frame.dispose();
+	}
 
 	void createMessageWindow() {
 		//do nothing for now

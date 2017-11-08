@@ -44,8 +44,11 @@ class ReadSocketThread implements Runnable
     {
         Scanner msgIn = new Scanner(inStream);
 
-        while(true)
+        while(!Thread.currentThread().isInterrupted())
         {
+            if(!msgIn.hasNextLine())
+                continue;
+
             String msg = msgIn.nextLine();
             //GeneralHelper.safePrintln("Received: " + msg);
             String plainMsg = SecurityHelper.parseAndDecryptMessage(msg, modes, sessionKey, privateKey, iv);
@@ -53,7 +56,8 @@ class ReadSocketThread implements Runnable
             Date date = new Date();
            // GeneralHelper.safePrintln("< " + dateFormat.format(date) + " - " + plainMsg);
             messagingWindow.writeToMessageWindow(plainMsg);
-        }   
+        }
+        System.out.println("read out");   
     }
 
     public void start() 
@@ -64,6 +68,11 @@ class ReadSocketThread implements Runnable
             t = new Thread(this, threadName);
             t.start();
         }
+    }
+
+    public void stop()
+    {
+        Thread.currentThread().interrupt();
     }
 
     public void join() throws InterruptedException

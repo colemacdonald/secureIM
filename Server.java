@@ -114,15 +114,24 @@ public class Server {
 
 	// Returns hashed password
 	static String handleUserLogin() {
-		String hashedPasswordFromClient;
+		String hashedPasswordFromClient = "";
 
 		boolean successful = false;
 		do {
 			// Read login information from client
 			Scanner clientInputScanner = new Scanner(clientInputStream);
-			String newOrExisting = clientInputScanner.nextLine();
-			String usernameFromClient = clientInputScanner.nextLine();
-			hashedPasswordFromClient = clientInputScanner.nextLine();
+			String newOrExisting = "";
+			String usernameFromClient = "";
+
+			try{
+				newOrExisting = clientInputScanner.nextLine();
+				usernameFromClient = clientInputScanner.nextLine();
+				hashedPasswordFromClient = clientInputScanner.nextLine();
+			} catch(NoSuchElementException e) {
+				System.out.println("caught");
+				clientInputScanner.close();
+				return "";
+			}			
 
 			if (!validateClientInput(newOrExisting, usernameFromClient, hashedPasswordFromClient)) {
 				System.out.println("Client did not follow correct protocol, exiting");
@@ -143,6 +152,7 @@ public class Server {
 			} else {
 				System.out.println("Client did not follow protocol");
 				respondFailure("login");
+				clientInputScanner.close();
 				System.exit(0);
 				return "";
 			}
@@ -202,6 +212,10 @@ public class Server {
 			server.setReuseAddress(true);
 			System.out.println("Waiting for client...");
 
+			ReadSocketThread receiveMessageThread = null;
+			WriteSocketThread sendMessageThread = null;
+			MessagingWindow messagingWindow = null;
+
 			while (true) {
 				try {
 					// wait for client connection
@@ -228,7 +242,19 @@ public class Server {
 					}
 					*/
 
+					if(messagingWindow != null)
+						messagingWindow.close();
+
+					if(sendMessageThread != null)
+						sendMessageThread.stop();
+
+					if(receiveMessageThread != null)
+						receiveMessageThread.stop();
+					
+
 					String hashedPasswordFromClient = handleUserLogin();
+					if(hashedPasswordFromClient.equals(""))
+						continue;
 
 					GeneralHelper.SessionKeyIVPair sessionKeyIVPair = new GeneralHelper.SessionKeyIVPair(null, null);
 
@@ -236,14 +262,14 @@ public class Server {
 						sessionKeyIVPair = handleSessionKeyExchange();
 					}
 
-					MessagingWindow messagingWindow = GeneralHelper.createUI();
+					messagingWindow = GeneralHelper.createUI();
 
-					ReadSocketThread receiveMessageThread = new ReadSocketThread("receive-messages", 
+					receiveMessageThread = new ReadSocketThread("receive-messages", 
 							clientInputStream, modes, null, sessionKeyIVPair, messagingWindow);
 
 					receiveMessageThread.start();
 
-					WriteSocketThread sendMessageThread = new WriteSocketThread("send-messages",
+					sendMessageThread = new WriteSocketThread("send-messages",
 						clientOutputStream, modes, null, sessionKeyIVPair, messagingWindow);
 
 					sendMessageThread.start();
@@ -251,8 +277,6 @@ public class Server {
 					if (modes.get("integrity") || modes.get("authentication")) {
 						// Get client's public key
 					}
-
-
 
 					/*
 					try {
