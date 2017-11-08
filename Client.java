@@ -66,9 +66,6 @@ public class Client {
 			byte[] passwordHash = SecurityHelper.computeDigest(plaintextPassword.getBytes());
 			passwordHashString = DatatypeConverter.printHexBinary(passwordHash);
 
-			//privKey = SecurityHelper.storeKeyPair(username);
-			//pubKey = GeneralHelper.getServerPublicKey();
-
 			// Send user login information to server
 			if (newUser) {
 				outputToServer.println("New");
@@ -76,9 +73,8 @@ public class Client {
 				outputToServer.println("Existing");
 			}
 			outputToServer.println("Username:" + username);
-			// TODO: Encrypted with server's public key
 
-			String encryptedPasswordHashString = DatatypeConverter.printHexBinary(SecurityHelper.encryptWithPublicKey(passwordHashString, serverPubKey));
+			String encryptedPasswordHashString = SecurityHelper.encryptWithPublicKey(passwordHashString, serverPubKey);
 
 			outputToServer.println("Password:" + encryptedPasswordHashString);
 			outputToServer.flush();
@@ -95,7 +91,11 @@ public class Client {
 				} else if (response.startsWith("Failure:signup")) {
 					System.out.println("Account creation failed, please try again");
 					continue;
-				} else {
+				} else if (response.startsWith("Failure:exists")) {
+					System.out.println("Username already exists, please try again");
+					continue;
+				}
+				else {
 					System.out.println("Received unexpected message from Server: " + response);
 					System.out.println("Exiting");
 					System.exit(0);
@@ -167,7 +167,8 @@ public class Client {
 
 		try {
 
-			serverPubKey = SecurityHelper.getServerPublicKey();
+			serverPubKey = SecurityHelper.getUserPublicKey("server");
+			KeyPair clientKP = SecurityHelper.generateUserKeyPair();
 
 			Socket serverConnection = new Socket("localhost", 8080);
 			serverOutputStream = serverConnection.getOutputStream();

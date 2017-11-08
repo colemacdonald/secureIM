@@ -26,7 +26,7 @@ public class Server {
 
 	static void respondFailure(String action) {
 		PrintStream outputToClient = new PrintStream(clientOutputStream, true);
-		outputToClient.println("Failure" + action);
+		outputToClient.println("Failure:" + action);
 	}
 
 	static boolean validateClientInput(String newOrExisting, String usernameField, String passwordField) {
@@ -47,7 +47,12 @@ public class Server {
 
 	static boolean addNewUser(String username, String passwordHash) {
 		try {
-			//TODO: check if the username already exists
+			System.out.println(username);
+			if (SecurityHelper.userExists(username)) {
+				respondFailure("exists");
+				return false;
+			}
+
 			FileWriter passwordWriter = new FileWriter("shared_data/user_hashed_passwords.csv", true);
 			passwordWriter.write(username + "," + passwordHash + "\n");
 			passwordWriter.close();
@@ -73,8 +78,10 @@ public class Server {
 
 				if (entries[0].equals(username)) {
 
-					String pass = new String(SecurityHelper.decryptWithPrivateKey(entries[1].getBytes(), privateKey));
-					if (pass.equals(passwordHash)) {
+					// decrypt password hash from client
+					String pass = SecurityHelper.decryptWithPrivateKey(passwordHash, privateKey);
+
+					if (entries[1].equals(pass)) {
 						System.out.println("User " + username + " logged in succesfully");
 						respondSuccess("login");
 						return true;

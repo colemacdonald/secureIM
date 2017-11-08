@@ -20,6 +20,7 @@ public class SecurityHelper {
 
     static final int DIGEST_LENGTH = 32;
     static final String PUBLIC_KEY_FILE = "shared_data/trusted_public_keys.csv";
+    static final String USER_PASS_FILE = "shared_data/user_hashed_passwords.csv";
 
     /*
      * Converts a byte array into a hex string
@@ -184,28 +185,39 @@ public class SecurityHelper {
         }
     }
 
-
-    static byte[] encryptWithPublicKey(String plaintext, PublicKey pubKey) {
-        
-        try {
-            Cipher pubCipher = Cipher.getInstance("RSA");
-            pubCipher.init(Cipher.PUBLIC_KEY, pubKey);
-            byte[] encryptedBytes = pubCipher.doFinal(plaintext.getBytes());
-            return encryptedBytes;
+    static KeyPair generateUserKeyPair() {
+        try{
+            KeyPairGenerator keypg = KeyPairGenerator.getInstance("RSA");
+            SecureRandom random = new SecureRandom();
+            keypg.initialize(2048, random);
+            KeyPair keyP = keypg.generateKeyPair();
+            return keyP;
         } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
     }
 
+    static String encryptWithPublicKey(String plaintext, PublicKey pubKey) {
+        
+        try {
+            Cipher pubCipher = Cipher.getInstance("RSA");
+            pubCipher.init(Cipher.ENCRYPT_MODE, pubKey);
+            String encryptedData = Base64.getEncoder().encodeToString(pubCipher.doFinal(plaintext.getBytes()));
+            return encryptedData;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 
-    static byte[] decryptWithPrivateKey(byte[] ciphertext, PrivateKey privKey) throws Exception{
+    static String decryptWithPrivateKey(String ciphertext, PrivateKey privKey) throws Exception{
         
         Cipher privCipher = Cipher.getInstance("RSA");
-        privCipher.init(Cipher.PRIVATE_KEY, privKey);
-        byte[] decryptedBytes = privCipher.doFinal(ciphertext);
+        privCipher.init(Cipher.DECRYPT_MODE, privKey);
+        String decryptedData = new String(privCipher.doFinal(Base64.getDecoder().decode(ciphertext)));
 
-        return decryptedBytes;
+        return decryptedData;
     }
 
 
@@ -232,18 +244,18 @@ public class SecurityHelper {
         }
     }
 
-    static KeyPair generateUserKeyPair() {
+    static byte[] signWithPrivateKey(PrivateKey privateKey, byte[] plaintext) {
         try{
-            KeyPairGenerator keypg = KeyPairGenerator.getInstance("RSA");
-            keypg.initialize(2048);
-            KeyPair keyP = keypg.generateKeyPair();
-            return keyP;
+            Signature dsa = Signature.getInstance("SHA1withDSA", "SUN");
+            dsa.initSign(privateKey);
+            dsa.update(plaintext);
+            byte[] sig = dsa.sign();
+            return sig;
         } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
     }
-
 
     static PrivateKey storeKeyPair(String userName) throws Exception{
 
@@ -255,18 +267,8 @@ public class SecurityHelper {
 
             Base64.Decoder decoder = Base64.getDecoder();
 
-            /*
-            BufferedReader buffer = new BufferedReader(new FileReader(userName + "_private_key.key"));
-            keyBytes = DatatypeConverter.parseBase64Binary(new String(buffer.readLine().getBytes()));
-            KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-            EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(keyBytes);
-            PrivateKey privateKey = keyFactory.generatePrivate(privateKeySpec);
-            */
-
             Path path = Paths.get(userName + "_private_key.key");
             keyBytes = Files.readAllBytes(path);
-
-
 
             PKCS8EncodedKeySpec ks = new PKCS8EncodedKeySpec(decoder.decode(keyBytes));
             KeyFactory kf = KeyFactory.getInstance("RSA");
@@ -292,40 +294,44 @@ public class SecurityHelper {
         }
     }
 
+    // searches through shared user password hash file and return whether or not provided username already exists
+    static boolean userExists(String userName) {
 
-    static PublicKey getServerPublicKey() throws Exception{
-        BufferedReader keys = new BufferedReader(new FileReader("shared_data/trusted_public_keys.csv"));
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(USER_PASS_FILE));
+            String line = br.readLine();
+            String[] savedName;
+            while (line != null) {
+                savedName = line.split(",");
+                if (savedName[0].equals(userName)) {
+                    return true;
+                }
+                line = br.readLine();
+            }
+            return false;
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            return false;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+
+    static PublicKey getUserPublicKey(String userName) throws Exception{
+        BufferedReader keys = new BufferedReader(new FileReader(PUBLIC_KEY_FILE));
         String line;
         while(true){
             line = keys.readLine();
-            if (line.startsWith("server")){
+            if (line.startsWith(userName)){
                 String[] serverKey = line.split(",");
-                System.out.println(serverKey[1]);
-
                 byte[] keyBytes = serverKey[1].getBytes();
-
                 Base64.Decoder decoder = Base64.getDecoder();
-
-                //Path path = Paths.get(PUBLIC_KEY_FILE);
-
-                //keyBytes = Files.readAllBytes(path);
-
-
                 X509EncodedKeySpec ks = new X509EncodedKeySpec(decoder.decode(keyBytes));
                 KeyFactory kf = KeyFactory.getInstance("RSA");
                 PublicKey publicKey = kf.generatePublic(ks);
                 return publicKey;
-
-                
-                //bytes
-
-                /*
-                byte[] keyBytes = serverKey[1].getBytes();
-
-                KeyFactory kf = KeyFactory.getInstance("RSA");
-                PublicKey publicKey = kf.generatePublic(new X509EncodedKeySpec(keyBytes));
-                return publicKey;
-                */
             }
             else {
                 continue;
