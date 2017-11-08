@@ -45,7 +45,7 @@ public class Server {
 		return true;
 	}
 
-	static boolean addNewUser(String username, String passwordHash) {
+	static boolean addNewUser(String username, String encryptedPasswordHash) {
 		try {
 			System.out.println(username);
 			if (SecurityHelper.userExists(username)) {
@@ -54,6 +54,7 @@ public class Server {
 			}
 
 			FileWriter passwordWriter = new FileWriter("shared_data/user_hashed_passwords.csv", true);
+			String passwordHash = SecurityHelper.decryptAssymetric(encryptedPasswordHash, privateKey);
 			passwordWriter.write(username + "," + passwordHash + "\n");
 			passwordWriter.close();
 
@@ -79,7 +80,7 @@ public class Server {
 
 				if (entries[0].equals(username)) {
 					// decrypt password hash from client
-					String decryptedPasswordHash = SecurityHelper.decryptWithPrivateKey(passwordHash, privateKey);
+					String decryptedPasswordHash = SecurityHelper.decryptAssymetric(passwordHash, privateKey);
 
 					if (entries[1].equals(decryptedPasswordHash)) {
 						System.out.println("User " + username + " logged in succesfully");

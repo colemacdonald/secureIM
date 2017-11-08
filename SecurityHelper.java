@@ -191,11 +191,6 @@ public class SecurityHelper {
             SecureRandom random = new SecureRandom();
             keypg.initialize(2048, random);
             KeyPair keyP = keypg.generateKeyPair();
-
-            String ciphertext = encryptWithPrivateKey("test string", keyP.getPrivate());
-            String plaintext = decryptWithPublicKey(ciphertext, keyP.getPublic());
-            System.out.println(plaintext);
-
             return keyP;
         } catch (Exception e) {
             e.printStackTrace();
@@ -203,7 +198,8 @@ public class SecurityHelper {
         }
     }
 
-
+    // Depricated, see encryptAssymetric
+    /*
     static String encryptWithPrivateKey(String plaintext, PrivateKey privateKey) {
 
         try {
@@ -216,7 +212,7 @@ public class SecurityHelper {
             return null;
         }
     }
-
+    
     static String decryptWithPublicKey(String ciphertext, PublicKey publicKey) {
 
         try {
@@ -229,8 +225,33 @@ public class SecurityHelper {
             return null;
         }
     }
+    */
 
+    static String encryptAssymetric(String plaintext, Key key) {
+        try {
+            Cipher cipher = Cipher.getInstance("RSA");
+            cipher.init(Cipher.ENCRYPT_MODE, key);
+            String encryptedData = Base64.getEncoder().encodeToString(cipher.doFinal(plaintext.getBytes()));
+            return encryptedData;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 
+    static String decryptAssymetric(String ciphertext, Key key) {
+        try {
+            Cipher cipher = Cipher.getInstance("RSA");
+            cipher.init(Cipher.DECRYPT_MODE, key);
+            String decryptedData = new String(cipher.doFinal(Base64.getDecoder().decode(ciphertext)));
+            return decryptedData;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /*
     static String encryptWithPublicKey(String plaintext, PublicKey pubKey) {
         
         try {
@@ -243,6 +264,7 @@ public class SecurityHelper {
             return null;
         }
     }
+    
 
     static String decryptWithPrivateKey(String ciphertext, PrivateKey privKey) throws Exception{
         
@@ -253,6 +275,7 @@ public class SecurityHelper {
         return decryptedData;
     }
 
+    */
 
     static SecretKey generatePasswordBasedKey(String password) {
         try {

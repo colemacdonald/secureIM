@@ -74,7 +74,7 @@ public class Client {
 			}
 			outputToServer.println("Username:" + username);
 
-			String encryptedPasswordHashString = SecurityHelper.encryptWithPublicKey(passwordHashString, serverPubKey);
+			String encryptedPasswordHashString = SecurityHelper.encryptAssymetric(passwordHashString, serverPubKey);
 
 			// outputToServer.println("Password:" + encryptedPasswordHashString);
 			outputToServer.println("Password:" + encryptedPasswordHashString);
