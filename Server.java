@@ -77,7 +77,6 @@ public class Server {
 				String[] entries = line.split(",");
 
 				if (entries[0].equals(username)) {
-
 					// decrypt password hash from client
 					String pass = SecurityHelper.decryptWithPrivateKey(passwordHash, privateKey);
 
@@ -260,7 +259,7 @@ public class Server {
 				} catch (java.net.SocketException e) {
 					System.out.println(e);
 				}
-			}
+			} //end while
 		} catch (java.net.SocketException e) {
 			System.out.println("SocketException: " + e);
 			System.exit(0);
