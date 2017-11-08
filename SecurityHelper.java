@@ -191,12 +191,45 @@ public class SecurityHelper {
             SecureRandom random = new SecureRandom();
             keypg.initialize(2048, random);
             KeyPair keyP = keypg.generateKeyPair();
+
+            String ciphertext = encryptWithPrivateKey("test string", keyP.getPrivate());
+            String plaintext = decryptWithPublicKey(ciphertext, keyP.getPublic());
+            System.out.println(plaintext);
+
             return keyP;
         } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
     }
+
+
+    static String encryptWithPrivateKey(String plaintext, PrivateKey privateKey) {
+
+        try {
+            Cipher privCipher = Cipher.getInstance("RSA");
+            privCipher.init(Cipher.ENCRYPT_MODE, privateKey);
+            String encryptedData = Base64.getEncoder().encodeToString(privCipher.doFinal(plaintext.getBytes()));
+            return encryptedData;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    static String decryptWithPublicKey(String ciphertext, PublicKey publicKey) {
+
+        try {
+            Cipher pubCipher = Cipher.getInstance("RSA");
+            pubCipher.init(Cipher.DECRYPT_MODE, publicKey);
+            String decryptedData = new String(pubCipher.doFinal(Base64.getDecoder().decode(ciphertext)));
+            return decryptedData;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
 
     static String encryptWithPublicKey(String plaintext, PublicKey pubKey) {
         
@@ -246,10 +279,10 @@ public class SecurityHelper {
 
     static byte[] signWithPrivateKey(PrivateKey privateKey, byte[] plaintext) {
         try{
-            Signature dsa = Signature.getInstance("SHA1withDSA", "SUN");
-            dsa.initSign(privateKey);
-            dsa.update(plaintext);
-            byte[] sig = dsa.sign();
+            Signature rsa = Signature.getInstance("RSA");
+            rsa.initSign(privateKey);
+            rsa.update(plaintext);
+            byte[] sig = rsa.sign();
             return sig;
         } catch (Exception e) {
             e.printStackTrace();
