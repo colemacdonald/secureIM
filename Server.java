@@ -73,7 +73,8 @@ public class Server {
 
 				if (entries[0].equals(username)) {
 
-					String pass = new String(SecurityHelper.decryptWithPrivateKey(entries[1].getBytes(), privateKey));
+					//String pass = new String(SecurityHelper.decryptWithPrivateKey(entries[1].getBytes(), privateKey));
+					String pass = entries[1];
 					if (pass.equals(passwordHash)) {
 						System.out.println("User " + username + " logged in succesfully");
 						respondSuccess("login");
@@ -253,7 +254,7 @@ public class Server {
 				} catch (java.net.SocketException e) {
 					System.out.println(e);
 				}
-			}
+			} //end while
 		} catch (java.net.SocketException e) {
 			System.out.println("SocketException: " + e);
 			System.exit(0);

@@ -62,7 +62,7 @@ class WriteSocketThread implements Runnable
                             String msg = SecurityHelper.prepareMessage(plaintext, modes, 
                                 sessionKey, sessionKey, iv);
 
-                            GeneralHelper.safePrintln("Sending: " + msg + " - " + SecurityHelper.parseAndDecryptMessage(msg, modes, sessionKey, sessionKey, iv));
+                            //GeneralHelper.safePrintln("Sending: " + msg + " - " + SecurityHelper.parseAndDecryptMessage(msg, modes, sessionKey, sessionKey, iv));
                             
                             socketWrite.println(msg);
                             socketWrite.flush();

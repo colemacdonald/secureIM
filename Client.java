@@ -78,9 +78,10 @@ public class Client {
 			outputToServer.println("Username:" + username);
 			// TODO: Encrypted with server's public key
 
-			String encryptedPasswordHashString = DatatypeConverter.printHexBinary(SecurityHelper.encryptWithPublicKey(passwordHashString, serverPubKey));
+			//String encryptedPasswordHashString = DatatypeConverter.printHexBinary(SecurityHelper.encryptWithPublicKey(passwordHashString, serverPubKey));
 
-			outputToServer.println("Password:" + encryptedPasswordHashString);
+			// outputToServer.println("Password:" + encryptedPasswordHashString);
+			outputToServer.println("Password:" + passwordHashString);
 			outputToServer.flush();
 
 			// Wait for login response from server
