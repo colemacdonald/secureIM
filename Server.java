@@ -17,6 +17,7 @@ import javax.crypto.spec.*;
 public class Server {
 	static OutputStream clientOutputStream;
 	static InputStream clientInputStream;
+	private static PrivateKey privateKey;
 
 	static void respondSuccess(String action) {
 		PrintStream outputToClient = new PrintStream(clientOutputStream, true);
@@ -71,7 +72,9 @@ public class Server {
 				String[] entries = line.split(",");
 
 				if (entries[0].equals(username)) {
-					if (entries[1].equals(passwordHash)) {
+
+					String pass = new String(SecurityHelper.decryptWithPrivateKey(entries[1].getBytes(), privateKey));
+					if (pass.equals(passwordHash)) {
 						System.out.println("User " + username + " logged in succesfully");
 						respondSuccess("login");
 						return true;
@@ -88,6 +91,11 @@ public class Server {
 			return false;
 
 		} catch (IOException e) {
+			e.printStackTrace();
+			respondFailure("login");
+			System.exit(0);
+			return false;
+		} catch (Exception e) {
 			e.printStackTrace();
 			respondFailure("login");
 			System.exit(0);
@@ -178,7 +186,7 @@ public class Server {
 
 		try {
 
-			PrivateKey privKey = SecurityHelper.storeKeyPair("server");
+			privateKey = SecurityHelper.storeKeyPair("server");
 
 			// create server socket
 			ServerSocket server = new ServerSocket(8080);

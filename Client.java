@@ -18,6 +18,7 @@ public class Client {
 	static InputStream serverInputStream;
 	private static PrivateKey privKey;
 	private static PublicKey pubKey;
+	private static PublicKey serverPubKey;
 
 	// Returns the hashed password of the user
 	static String handleLogin(boolean newUser) {
@@ -77,9 +78,9 @@ public class Client {
 			outputToServer.println("Username:" + username);
 			// TODO: Encrypted with server's public key
 
-			//String encryptedPasswordHashString = DatatypeConverter.printHexBinary(SecurityHelper.encryptWithPublicKey(passwordHashString, pubKey));
+			String encryptedPasswordHashString = DatatypeConverter.printHexBinary(SecurityHelper.encryptWithPublicKey(passwordHashString, serverPubKey));
 
-			outputToServer.println("Password:" + passwordHashString);
+			outputToServer.println("Password:" + encryptedPasswordHashString);
 			outputToServer.flush();
 
 			// Wait for login response from server
@@ -165,6 +166,9 @@ public class Client {
 		HashMap<String, Boolean> modes = GeneralHelper.parseCommandLine(args);
 
 		try {
+
+			serverPubKey = SecurityHelper.getServerPublicKey();
+
 			Socket serverConnection = new Socket("localhost", 8080);
 			serverOutputStream = serverConnection.getOutputStream();
 			serverInputStream = serverConnection.getInputStream();
@@ -187,6 +191,7 @@ public class Client {
 
 			while(true);
 		} catch (Exception e) {
+			e.printStackTrace();
 			System.out.println("Exception: " + e);
 		}
 	}

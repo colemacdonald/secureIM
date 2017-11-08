@@ -11,7 +11,10 @@ import java.security.spec.*;
 import javax.crypto.*;
 import javax.crypto.spec.*;
 import javax.xml.bind.DatatypeConverter;
-
+import java.security.cert.CertificateFactory;
+import java.nio.file.Paths;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 public class SecurityHelper {
 
@@ -182,13 +185,17 @@ public class SecurityHelper {
     }
 
 
-    static byte[] encryptWithPublicKey(String plaintext, PublicKey pubKey) throws Exception{
+    static byte[] encryptWithPublicKey(String plaintext, PublicKey pubKey) {
         
-        Cipher pubCipher = Cipher.getInstance("RSA");
-        pubCipher.init(Cipher.PUBLIC_KEY, pubKey);
-        byte[] encryptedBytes = pubCipher.doFinal(plaintext.getBytes());
-
-        return encryptedBytes;
+        try {
+            Cipher pubCipher = Cipher.getInstance("RSA");
+            pubCipher.init(Cipher.PUBLIC_KEY, pubKey);
+            byte[] encryptedBytes = pubCipher.doFinal(plaintext.getBytes());
+            return encryptedBytes;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
 
@@ -242,24 +249,44 @@ public class SecurityHelper {
 
         File clientKeyFile = new File(userName + "_private_key.key");
 
+        // read private key from file, because it exists already
         if (clientKeyFile.length() > 0){
             byte[] keyBytes = null;
+
+            Base64.Decoder decoder = Base64.getDecoder();
+
+            /*
             BufferedReader buffer = new BufferedReader(new FileReader(userName + "_private_key.key"));
             keyBytes = DatatypeConverter.parseBase64Binary(new String(buffer.readLine().getBytes()));
             KeyFactory keyFactory = KeyFactory.getInstance("RSA");
             EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(keyBytes);
             PrivateKey privateKey = keyFactory.generatePrivate(privateKeySpec);
+            */
+
+            Path path = Paths.get(userName + "_private_key.key");
+            keyBytes = Files.readAllBytes(path);
+
+
+
+            PKCS8EncodedKeySpec ks = new PKCS8EncodedKeySpec(decoder.decode(keyBytes));
+            KeyFactory kf = KeyFactory.getInstance("RSA");
+            PrivateKey privateKey = kf.generatePrivate(ks);
             return privateKey;
         }
+        // generate and store keypair
         else {
             KeyPair clientKP = SecurityHelper.generateUserKeyPair();
             Base64.Encoder encoder = Base64.getEncoder();
 
             Writer keyFile = new FileWriter(userName + "_private_key.key");
+            //FileOutputStream keyFile = new FileOutputStream(userName + "_private_key.key");
             keyFile.write(encoder.encodeToString(clientKP.getPrivate().getEncoded()));
+            //keyFile.write(encoder.encodeToString(clientKP.getPrivate().getEncoded()));
             keyFile.close();
+            //keyFile = new FileOutputStream(PUBLIC_KEY_FILE);
             keyFile = new FileWriter(PUBLIC_KEY_FILE);
             keyFile.write(userName + "," + encoder.encodeToString(clientKP.getPublic().getEncoded()));
+            //keyFile.write(userName + "," + encoder.encodeToString(clientKP.getPublic().getEncoded()));
             keyFile.close();
             return clientKP.getPrivate();
         }
@@ -268,7 +295,42 @@ public class SecurityHelper {
 
     static PublicKey getServerPublicKey() throws Exception{
         BufferedReader keys = new BufferedReader(new FileReader("shared_data/trusted_public_keys.csv"));
-        return null;
+        String line;
+        while(true){
+            line = keys.readLine();
+            if (line.startsWith("server")){
+                String[] serverKey = line.split(",");
+                System.out.println(serverKey[1]);
+
+                byte[] keyBytes = serverKey[1].getBytes();
+
+                Base64.Decoder decoder = Base64.getDecoder();
+
+                //Path path = Paths.get(PUBLIC_KEY_FILE);
+
+                //keyBytes = Files.readAllBytes(path);
+
+
+                X509EncodedKeySpec ks = new X509EncodedKeySpec(decoder.decode(keyBytes));
+                KeyFactory kf = KeyFactory.getInstance("RSA");
+                PublicKey publicKey = kf.generatePublic(ks);
+                return publicKey;
+
+                
+                //bytes
+
+                /*
+                byte[] keyBytes = serverKey[1].getBytes();
+
+                KeyFactory kf = KeyFactory.getInstance("RSA");
+                PublicKey publicKey = kf.generatePublic(new X509EncodedKeySpec(keyBytes));
+                return publicKey;
+                */
+            }
+            else {
+                continue;
+            }
+        }
     }
 
 
