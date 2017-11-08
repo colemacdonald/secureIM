@@ -64,7 +64,7 @@ class WriteSocketThread implements Runnable
                             }
 
                             String msg = SecurityHelper.prepareMessage(plaintext, modes, 
-                                sessionKey, sessionKey, iv);
+                                sessionKey, privateKey, iv);
 
                             //GeneralHelper.safePrintln("Sending: " + msg + " - " + SecurityHelper.parseAndDecryptMessage(msg, modes, sessionKey, sessionKey, iv));
 
@@ -81,7 +81,6 @@ class WriteSocketThread implements Runnable
                 //}
             //}
         }
-        System.out.println("write out");
     }
 
     public void stop()

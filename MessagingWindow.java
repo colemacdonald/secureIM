@@ -7,6 +7,9 @@ import java.awt.event.*;
 import java.lang.StringBuffer;
 import java.util.Scanner;
 import java.io.*;
+import java.util.Date;
+import java.text.SimpleDateFormat;
+import java.text.DateFormat;
 
 public class MessagingWindow implements ActionListener {
 	
@@ -64,8 +67,10 @@ public class MessagingWindow implements ActionListener {
 		 			
 					//synchronized(inputReady) {
 						String content = inputTextField.getText();
-
-						writeToMessageWindow(content);
+						
+						DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+						Date date = new Date();
+						writeToMessageWindow(dateFormat.format(date) + " > " + content);
 			        	//System.out.println(content);
 			        	userInputBuffer.append(content);
 			        	inputTextField.setText("");
