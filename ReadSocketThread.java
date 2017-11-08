@@ -23,19 +23,21 @@ class ReadSocketThread implements Runnable
     private String threadName;
     private InputStream inStream;
     private HashMap<String, Boolean> modes;
-    SecretKey sessionKey;
-    SecretKey privateKey;
-    byte[] iv;
+    private SecretKey sessionKey;
+    private SecretKey privateKey;
+    private byte[] iv;
+    private MessagingWindow messagingWindow;
 
-    ReadSocketThread(String _threadName, InputStream _inStream, HashMap<String, Boolean> _modes, 
-        SecretKey _privateKey, GeneralHelper.SessionKeyIVPair sessionKeyIVPair)
+    ReadSocketThread(String threadName, InputStream inStream, HashMap<String, Boolean> modes, 
+        SecretKey privateKey, GeneralHelper.SessionKeyIVPair sessionKeyIVPair, MessagingWindow window)
     {
-        this.inStream = _inStream;
-        this.threadName = _threadName;
-        this.modes = _modes;
+        this.inStream = inStream;
+        this.threadName = threadName;
+        this.modes = modes;
         this.sessionKey = sessionKeyIVPair.sessionKey;
-        this.privateKey = _privateKey;
+        this.privateKey = privateKey;
         this.iv = sessionKeyIVPair.initializationVector;
+        this.messagingWindow = window;
     }
 
     public void run()
@@ -44,17 +46,13 @@ class ReadSocketThread implements Runnable
 
         while(true)
         {
-            while(!msgIn.hasNext());
-
-            if(msgIn.hasNext())
-            {
-                String msg = msgIn.next();
-                GeneralHelper.safePrintln("Received: " + msg);
-                String plainMsg = SecurityHelper.parseAndDecryptMessage(msg, modes, sessionKey, privateKey, iv);
-                DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-                Date date = new Date();
-                GeneralHelper.safePrintln("< " + dateFormat.format(date) + " - " + plainMsg);
-            }
+            String msg = msgIn.nextLine();
+            //GeneralHelper.safePrintln("Received: " + msg);
+            String plainMsg = SecurityHelper.parseAndDecryptMessage(msg, modes, sessionKey, privateKey, iv);
+            DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+            Date date = new Date();
+           // GeneralHelper.safePrintln("< " + dateFormat.format(date) + " - " + plainMsg);
+            messagingWindow.writeToMessageWindow(plainMsg);
         }   
     }
 

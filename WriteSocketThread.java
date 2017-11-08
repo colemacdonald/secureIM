@@ -21,62 +21,65 @@ class WriteSocketThread implements Runnable
     private Thread t;
     private String threadName;
     private OutputStream outputStream;
-    private StringBuffer inputBuffer;
     private HashMap<String, Boolean> modes;
-    SecretKey sessionKey;
-    SecretKey privateKey;
-    byte[] iv;
+    private SecretKey sessionKey;
+    private SecretKey privateKey;
+    private byte[] iv;
+    private MessagingWindow messagingWindow;
 
-    WriteSocketThread(String _threadName, OutputStream _outputStream, HashMap<String, Boolean> _modes,
-        SecretKey _privateKey, GeneralHelper.SessionKeyIVPair sessionKeyIVPair)
+    WriteSocketThread(String threadName, OutputStream outputStream, HashMap<String, Boolean> modes,
+        SecretKey privateKey, GeneralHelper.SessionKeyIVPair sessionKeyIVPair, MessagingWindow window)
     {
-        this.outputStream = _outputStream;
-        this.threadName = _threadName;
-        this.modes = _modes;
+        this.outputStream = outputStream;
+        this.threadName = threadName;
+        this.modes = modes;
         this.sessionKey = sessionKeyIVPair.sessionKey;
-        this.privateKey = _privateKey;
+        this.privateKey = privateKey;
         this.iv = sessionKeyIVPair.initializationVector;
+        this.messagingWindow = window;
     }
 
     public void run()
     {
-        inputBuffer = new StringBuffer();
-
-        Object inputReady = new Object();
-        UserInput ui = new UserInput(inputBuffer, inputReady);
-        ui.CreateTextField();
+        //Object inputReady = new Object();
+        StringBuffer userInputBuffer = messagingWindow.getUserInputBuffer();
 
         PrintStream socketWrite = new PrintStream(outputStream);
 
         while(true)
         {
             // wait on input (without wasting CPU time)
-            synchronized(inputReady) {
-                while (inputBuffer.length() == 0) {
-                    try {
+            //synchronized(inputReady) {
+               // while (userInputBuffer.length() == 0) {
+                    //try {
                         // This is signalled within UserInput.java
-                        inputReady.wait();
-                        if(inputBuffer.length() > 0) {
-                            String plaintext = inputBuffer.toString();
-                            inputBuffer.setLength(0);
+                        //inputReady.wait();
+
+                        if(userInputBuffer.length() > 0) {
+                            String plaintext;
+
+                            synchronized(userInputBuffer) {
+                                plaintext = userInputBuffer.toString();
+                                userInputBuffer.setLength(0);                                
+                            }
+
                             String msg = SecurityHelper.prepareMessage(plaintext, modes, 
                                 sessionKey, sessionKey, iv);
 
-                            GeneralHelper.safePrintln("Sending: " + msg + " - " + SecurityHelper.parseAndDecryptMessage(msg, modes, sessionKey, sessionKey, iv));
-                            
+                            //GeneralHelper.safePrintln("Sending: " + msg + " - " + SecurityHelper.parseAndDecryptMessage(msg, modes, sessionKey, sessionKey, iv));
+
                             socketWrite.println(msg);
                             socketWrite.flush();
                             
-                            DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-                            Date date = new Date();
-                            GeneralHelper.safePrintln("> " + dateFormat.format(date) + " - " + plaintext);                       
-
+                            // DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+                            // Date date = new Date();
+                            // GeneralHelper.safePrintln("> " + dateFormat.format(date) + " - " + plaintext);                       
                         }
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
+                    //} catch (InterruptedException e) {
+                    //    e.printStackTrace();
+                    //}
+                //}
+            //}
         }
     }
 
