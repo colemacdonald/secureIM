@@ -251,7 +251,7 @@ public class SecurityHelper {
 
         // read private key from file, because it exists already
         if (clientKeyFile.length() > 0){
-            System.out..println("Generating server public/private keypair...");
+            System.out.println("Generating server public/private keypair...");
             
             byte[] keyBytes = null;
 

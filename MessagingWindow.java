@@ -8,28 +8,42 @@ import java.lang.StringBuffer;
 import java.util.Scanner;
 import java.io.*;
 
-public class UserInput implements ActionListener{
+public class MessagingWindow implements ActionListener {
 	
-	JFrame frame;
-	JTextField inputTextField;
-	JScrollPane scrollPane;
-	StringBuffer userInput;
-	JTextArea messageDisplayArea;
-	Object inputReady;
+	private JFrame frame;
+	private JTextField inputTextField;
+	private JScrollPane scrollPane;
+	private JTextArea messageDisplayArea;
+	private StringBuffer userInputBuffer;
+	//Object inputReady;
 
-	UserInput(StringBuffer _userInput, Object _inputReady){
-		this.userInput = _userInput;
-		this.inputReady = _inputReady;
+	MessagingWindow(StringBuffer userInputBuffer) { //Object inputReady){
+		this.userInputBuffer = userInputBuffer;
+		//this.inputReady = inputReady;
+
+		this.frame = new JFrame("IM");
+        createTextField();
+        createMessageWindow();
 	}
 
-	void CreateTextField(){
-		frame = new JFrame("IM");
+	public StringBuffer getUserInputBuffer() {
+		return userInputBuffer;
+	}
+
+	public synchronized void writeToMessageWindow(String message) {
+		System.out.println("Writing to message window: " + message);
+		messageDisplayArea.append(message + "\n");
+		System.out.println("Wrote message: " + message);
+	}
+
+	private void createTextField() {
         inputTextField = new JTextField(20);
-		inputTextField.setBounds(100,350,200,30);
+		inputTextField.setBounds(100,250,200,30);
 		
 		messageDisplayArea = new JTextArea();
 		messageDisplayArea.setLineWrap(true);
 		messageDisplayArea.setWrapStyleWord(true);
+		messageDisplayArea.setEditable(false);
 		
 
 		scrollPane = new JScrollPane(messageDisplayArea);
@@ -48,17 +62,22 @@ public class UserInput implements ActionListener{
 
 		 		if(event.getKeyCode()==KeyEvent.VK_ENTER){
 		 			
-					synchronized(inputReady) {
+					//synchronized(inputReady) {
 						String content = inputTextField.getText();
+
 						messageDisplayArea.append(content);
 			        	//System.out.println(content);
-			        	userInput.append(content);
+			        	userInputBuffer.append(content);
 			        	inputTextField.setText("");
-			        	inputReady.notify();
-		        	}
+			        	//inputReady.notify();
+		        	//}
 		       	}
 		    }
 		});
+	}	
+
+	void createMessageWindow() {
+		//do nothing for now
 	}
 
 	public void actionPerformed(ActionEvent e) {

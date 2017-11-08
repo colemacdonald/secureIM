@@ -57,4 +57,11 @@ public class GeneralHelper
             System.out.println(s);
         }
     }
+
+    static MessagingWindow createUI() {
+        StringBuffer userInputBuffer = new StringBuffer();
+        MessagingWindow window = new MessagingWindow(userInputBuffer);
+
+        return window;
+    }
 }
