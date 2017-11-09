@@ -29,7 +29,7 @@ class ReadSocketThread implements Runnable
     private MessagingWindow messagingWindow;
 
     ReadSocketThread(String threadName, InputStream inStream, HashMap<String, Boolean> modes, 
-        SecretKey privateKey, GeneralHelper.SessionKeyIVPair sessionKeyIVPair, MessagingWindow window)
+        SecretKey privateKey, SecurityHelper.SessionKeyIVPair sessionKeyIVPair, MessagingWindow window)
     {
         this.inStream = inStream;
         this.threadName = threadName;

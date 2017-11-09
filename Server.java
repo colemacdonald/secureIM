@@ -165,7 +165,7 @@ public class Server {
 	}
 
 	// Returns session key/initialization vector pair
-	static GeneralHelper.SessionKeyIVPair handleSessionKeyExchange() {
+	static SecurityHelper.SessionKeyIVPair handleSessionKeyExchange() {
 		Scanner clientMessageScanner = new Scanner(clientInputStream);
 		String clientMessage = clientMessageScanner.nextLine();
 
@@ -189,7 +189,7 @@ public class Server {
 
 			respondSuccess("sessionkey");
 
-			return new GeneralHelper.SessionKeyIVPair(sessionKey, initializationVector);
+			return new SecurityHelper.SessionKeyIVPair(sessionKey, initializationVector);
 		} else {
 			System.out.println("Client did not follow protocol");
 			respondFailure("sessionkey");
@@ -256,7 +256,7 @@ public class Server {
 					if(hashedPasswordFromClient.equals(""))
 						continue;
 
-					GeneralHelper.SessionKeyIVPair sessionKeyIVPair = new GeneralHelper.SessionKeyIVPair(null, null);
+					SecurityHelper.SessionKeyIVPair sessionKeyIVPair = new SecurityHelper.SessionKeyIVPair(null, null);
 
 					if (modes.get("confidentiality")) {
 						sessionKeyIVPair = handleSessionKeyExchange();
