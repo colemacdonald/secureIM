@@ -209,6 +209,8 @@ public class SecurityHelper {
             
             String encryptedData = Base64.getEncoder().encodeToString(cipher.doFinal(plaintext.getBytes()));
             
+            System.out.println(encryptedData);
+
             return encryptedData;
 
         } catch (Exception e) {
@@ -222,6 +224,7 @@ public class SecurityHelper {
             Cipher cipher = Cipher.getInstance("RSA");
             cipher.init(Cipher.DECRYPT_MODE, key);
             
+            System.out.println(ciphertext);
             String decryptedData = new String(cipher.doFinal(Base64.getDecoder().decode(ciphertext)));
 
             return decryptedData;
@@ -336,8 +339,6 @@ public class SecurityHelper {
             String line;
             while(true){
                 line = keys.readLine();
-                System.out.println(userName);
-                System.out.println(line);
                 if (line.startsWith(userName)){
                     String[] serverKey = line.split(",");
                     byte[] keyBytes = serverKey[1].getBytes();
@@ -345,7 +346,6 @@ public class SecurityHelper {
                     X509EncodedKeySpec ks = new X509EncodedKeySpec(decoder.decode(keyBytes));
                     KeyFactory kf = KeyFactory.getInstance("RSA");
                     PublicKey publicKey = kf.generatePublic(ks);
-                    System.out.println(serverKey[1]);
                     return publicKey;
                 }
                 else {
