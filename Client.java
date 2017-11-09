@@ -152,9 +152,6 @@ public class Client {
 		Scanner serverResponseScanner = new Scanner(serverInputStream);
 		String serverResponse = serverResponseScanner.nextLine();
 
-		System.out.println("Session key: " + keyHexString);
-		System.out.println("IV: " + initializationVectorHexString);
-
 		serverResponseScanner.close();
 
 		if (serverResponse.startsWith("Success:sessionkey")) {

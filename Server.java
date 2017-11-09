@@ -130,7 +130,6 @@ public class Server {
 				usernameFromClient = clientInputScanner.nextLine();
 				hashedPasswordFromClient = clientInputScanner.nextLine();
 			} catch(NoSuchElementException e) {
-				System.out.println("caught");
 				clientInputScanner.close();
 				return "";
 			}			
@@ -275,7 +274,7 @@ public class Server {
 
 					if(receiveMessageThread != null) {
 						receiveMessageThread.stop();
-					}		
+					}
 
 					if (!verifyClientModes(modes)) {
 						System.out.println("Client attempted to start connection with incorrect modes");
@@ -308,16 +307,6 @@ public class Server {
 					if (modes.get("integrity") || modes.get("authentication")) {
 						// Get client's public key
 					}
-
-					/*
-					try {
-						receiveMessageThread.join();
-						sendMessageThread.join();
-						System.out.println("Both threads joined??");
-					} catch (InterruptedException e) {
-						System.out.println(e);
-						continue;
-					} */
 				} catch (java.net.SocketException e) {
 					System.out.println(e);
 				}
