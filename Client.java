@@ -183,7 +183,7 @@ public class Client {
 				sessionKeyIVPair = handleSessionKeyExchange(passwordHash);
 			}
 
-			MessagingWindow window = GeneralHelper.createUI();
+			MessagingWindow window = GeneralHelper.createUI("Client");
 
 			ReadSocketThread receiveMessageThread = new ReadSocketThread("receive-messages", 
 					serverInputStream, modes, null, sessionKeyIVPair, window);

@@ -73,7 +73,6 @@ public class SecurityHelper {
 
     /*
      * To be used when receiveing a message - check received digest against computed one
-     * TODO: Will the digest have been seperated from the msg at this point?
      */
     static boolean confirmDigest(byte[] received)
     {

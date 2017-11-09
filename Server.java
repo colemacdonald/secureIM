@@ -262,7 +262,7 @@ public class Server {
 						sessionKeyIVPair = handleSessionKeyExchange();
 					}
 
-					messagingWindow = GeneralHelper.createUI();
+					messagingWindow = GeneralHelper.createUI("Server");
 
 					receiveMessageThread = new ReadSocketThread("receive-messages", 
 							clientInputStream, modes, null, sessionKeyIVPair, messagingWindow);

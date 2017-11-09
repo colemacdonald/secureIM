@@ -58,9 +58,9 @@ public class GeneralHelper
         }
     }
 
-    static MessagingWindow createUI() {
+    static MessagingWindow createUI(String windowName) {
         StringBuffer userInputBuffer = new StringBuffer();
-        MessagingWindow window = new MessagingWindow(userInputBuffer);
+        MessagingWindow window = new MessagingWindow(userInputBuffer, windowName);
 
         return window;
     }

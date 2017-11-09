@@ -18,13 +18,15 @@ public class MessagingWindow implements ActionListener {
 	private JScrollPane scrollPane;
 	private JTextArea messageDisplayArea;
 	private StringBuffer userInputBuffer;
+	private String windowName;
 	//Object inputReady;
 
-	MessagingWindow(StringBuffer userInputBuffer) { //Object inputReady){
+	MessagingWindow(StringBuffer userInputBuffer, String windowName) { //Object inputReady){
 		this.userInputBuffer = userInputBuffer;
+		this.windowName = windowName;
 		//this.inputReady = inputReady;
 
-		this.frame = new JFrame("IM");
+		this.frame = new JFrame(windowName);
         createTextField();
         createMessageWindow();
 	}
