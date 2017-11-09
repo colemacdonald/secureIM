@@ -114,6 +114,8 @@ public class SecurityHelper {
                 byteStream.write(computeDigest(encryptedWithSession));
             }
 
+            encryptedWithSession = byteStream.toByteArray();
+
             /* AUTHENTICATION / INTEGRITY */
             if(modes.get("authentication") || modes.get("integrity")) {// encrypt with private key
                 encryptedWithSession = Base64.getDecoder().decode(encryptAssymetric(new String(Base64.getEncoder().encodeToString(encryptedWithSession)), privateKey));
@@ -123,14 +125,14 @@ public class SecurityHelper {
         {
             System.out.println("Exception: " + e);
         }
-        return bytesToHex(byteStream.toByteArray());
+        return bytesToHex(encryptedWithSession);
     }
 
     static String parseAndDecryptMessage(String encryptedMessage, HashMap<String, Boolean> modes, SecretKey sessionKey, Key publicKey, byte[] iv)
     {   
         if(modes.get("authentication")) // decrypt using public key
         {
-            encryptedMessage = decryptAssymetric(encryptedMessage, publicKey);
+            encryptedMessage = decryptAssymetric(Base64.getEncoder().encodeToString(hexStringToByteArray(encryptedMessage)), publicKey);
         }
 
         byte[] encryptedBytes = hexStringToByteArray(encryptedMessage);
@@ -217,7 +219,7 @@ public class SecurityHelper {
             cipher.init(Cipher.ENCRYPT_MODE, key);
             
             String encryptedData = Base64.getEncoder().encodeToString(cipher.doFinal(plaintext.getBytes()));
-            
+            System.out.println("encrypted data: " + encryptedData);
             return encryptedData;
 
         } catch (Exception e) {
@@ -231,7 +233,7 @@ public class SecurityHelper {
             Cipher cipher = Cipher.getInstance("RSA");
             cipher.init(Cipher.DECRYPT_MODE, key);
             
-            System.out.println(ciphertext);
+            System.out.println("ciphertext: " + Base64.getEncoder().encode(hexStringToByteArray(ciphertext)));
             String decryptedData = new String(cipher.doFinal(Base64.getDecoder().decode(ciphertext)));
 
             return decryptedData;

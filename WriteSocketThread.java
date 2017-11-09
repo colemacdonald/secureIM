@@ -68,6 +68,7 @@ class WriteSocketThread implements Runnable
 
                             //GeneralHelper.safePrintln("Sending: " + msg + " - " + SecurityHelper.parseAndDecryptMessage(msg, modes, sessionKey, sessionKey, iv));
 
+                            System.out.println("Sending message: " + msg);
                             socketWrite.println(msg);
                             socketWrite.flush();
                             
