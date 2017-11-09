@@ -219,9 +219,8 @@ public class SecurityHelper {
             cipher.init(Cipher.ENCRYPT_MODE, key);
             
             String encryptedData = Base64.getEncoder().encodeToString(cipher.doFinal(plaintext.getBytes()));
-            //System.out.println("encrypted data: " + encryptedData);
-            return encryptedData;
 
+            return encryptedData;
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -233,7 +232,7 @@ public class SecurityHelper {
             Cipher cipher = Cipher.getInstance("RSA");
             cipher.init(Cipher.DECRYPT_MODE, key);
             
-            System.out.println("ciphertext: " + Base64.getEncoder().encode(hexStringToByteArray(ciphertext)));
+            //System.out.println("ciphertext: " + Base64.getEncoder().encode(hexStringToByteArray(ciphertext)));
             String decryptedData = new String(cipher.doFinal(Base64.getDecoder().decode(ciphertext)));
 
             return decryptedData;

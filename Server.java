@@ -186,8 +186,6 @@ public class Server {
 
 			String sessionKeyHexString = messageBody.substring(0, commaIndex);
 			String initializationVectorHexString = messageBody.substring(commaIndex + 1);
-			System.out.println("Session key: " + sessionKeyHexString);
-			System.out.println("IV: " + initializationVectorHexString);
 
 			byte[] sessionKeyBytes = DatatypeConverter.parseHexBinary(sessionKeyHexString);
 			SecretKey sessionKey = new SecretKeySpec(sessionKeyBytes, 0, sessionKeyBytes.length, "AES");
