@@ -118,7 +118,8 @@ public class SecurityHelper {
 
             /* AUTHENTICATION / INTEGRITY */
             if(modes.get("authentication") || modes.get("integrity")) {// encrypt with private key
-                encryptedWithSession = Base64.getDecoder().decode(encryptAssymetric(new String(Base64.getEncoder().encodeToString(encryptedWithSession)), privateKey));
+                //TODO important: make this work!
+                //encryptedWithSession = Base64.getDecoder().decode(encryptAssymetric(new String(Base64.getEncoder().encodeToString(encryptedWithSession)), privateKey));
             }
         }
         catch (IOException e)
@@ -132,7 +133,8 @@ public class SecurityHelper {
     {   
         if(modes.get("authentication")) // decrypt using public key
         {
-            encryptedMessage = decryptAssymetric(Base64.getEncoder().encodeToString(hexStringToByteArray(encryptedMessage)), publicKey);
+            //TODO important: make this work!
+            //encryptedMessage = decryptAssymetric(Base64.getEncoder().encodeToString(hexStringToByteArray(encryptedMessage)), publicKey);
         }
 
         byte[] encryptedBytes = hexStringToByteArray(encryptedMessage);
@@ -213,30 +215,24 @@ public class SecurityHelper {
         }
     }
 
-    static String encryptAssymetric(String plaintext, Key key) {
+    static byte[] encryptAssymetric(byte[] plaintext_bytes, Key key) {
         try {
             Cipher cipher = Cipher.getInstance("RSA");
             cipher.init(Cipher.ENCRYPT_MODE, key);
-            
-            String encryptedData = Base64.getEncoder().encodeToString(cipher.doFinal(plaintext.getBytes()));
 
-            return encryptedData;
+            return cipher.doFinal(plaintext_bytes);
         } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
     }
 
-    static String decryptAssymetric(String ciphertext, Key key) {
+    static byte[] decryptAssymetric(byte[] ciphertext_bytes, Key key) {
         try {
             Cipher cipher = Cipher.getInstance("RSA");
             cipher.init(Cipher.DECRYPT_MODE, key);
-            
-            //System.out.println("ciphertext: " + Base64.getEncoder().encode(hexStringToByteArray(ciphertext)));
-            String decryptedData = new String(cipher.doFinal(Base64.getDecoder().decode(ciphertext)));
 
-            return decryptedData;
-
+            return cipher.doFinal(ciphertext_bytes);
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -369,35 +365,50 @@ public class SecurityHelper {
     }
 
     public static void main(String[] args) {
-        String password = "cailan";
-        System.out.println("Password: " + password);
+        // String password = "cailan";
+        // System.out.println("Password: " + password);
         
-        SecureRandom random = new SecureRandom();
-        byte[] initializationVector = new byte[16];
-        random.nextBytes(initializationVector);
+        // SecureRandom random = new SecureRandom();
+        // byte[] initializationVector = new byte[16];
+        // random.nextBytes(initializationVector);
 
-        SecretKey sessionKey = generatePasswordBasedKey(password);
-        System.out.println("Key: " + Arrays.toString(sessionKey.getEncoded()));
+        // SecretKey sessionKey = generatePasswordBasedKey(password);
+        // System.out.println("Key: " + Arrays.toString(sessionKey.getEncoded()));
 
-        String plaintext = "hello, world";
-        System.out.println("plaintext: " + plaintext);
+        // String plaintext = "hello, world";
+        // System.out.println("plaintext: " + plaintext);
 
-        HashMap<String, Boolean> modes = new HashMap<String, Boolean>();
+        // HashMap<String, Boolean> modes = new HashMap<String, Boolean>();
 
-        modes.put("authentication", true);
-        modes.put("confidentiality", true);
-        modes.put("integrity", true);
+        // modes.put("authentication", true);
+        // modes.put("confidentiality", true);
+        // modes.put("integrity", true);
 
-        String msg = prepareMessage(plaintext, modes, sessionKey, sessionKey, initializationVector);
-        System.out.println("MESSAGE: " + msg);
-        String msg2 = parseAndDecryptMessage(msg, modes, sessionKey, sessionKey, initializationVector);
-        System.out.println("DECRYPTED: " + msg2);
+        // String msg = prepareMessage(plaintext, modes, sessionKey, sessionKey, initializationVector);
+        // System.out.println("MESSAGE: " + msg);
+        // String msg2 = parseAndDecryptMessage(msg, modes, sessionKey, sessionKey, initializationVector);
+        // System.out.println("DECRYPTED: " + msg2);
 
-        byte[] ciphertext = encryptWithSessionKey(plaintext.getBytes(), initializationVector, sessionKey);
-        System.out.println("ciphertext: " + Arrays.toString(ciphertext));
+        // byte[] ciphertext = encryptWithSessionKey(plaintext.getBytes(), initializationVector, sessionKey);
+        // System.out.println("ciphertext: " + Arrays.toString(ciphertext));
 
-        byte[] decryptedText = decryptWithSessionKey(ciphertext, initializationVector, sessionKey);
-        String decryptedString = new String(decryptedText);
-        System.out.println("decrypted text: " + decryptedString);
+        // byte[] decryptedText = decryptWithSessionKey(ciphertext, initializationVector, sessionKey);
+        // String decryptedString = new String(decryptedText);
+        // System.out.println("decrypted text: " + decryptedString);
+
+        try {
+            PrivateKey privateKey = storeKeyPair("test_user");
+            PublicKey publicKey = getUserPublicKey("test_user");
+
+            byte[] test_bytes = {1, 2, 3, 4, 5};
+            byte[] encrypted = encryptAssymetric(test_bytes, publicKey);
+            byte[] decrypted = decryptAssymetric(encrypted, privateKey);
+
+            System.out.println("Original: " + Arrays.toString(test_bytes));
+            System.out.println("Encrypted: " + Arrays.toString(encrypted));
+            System.out.println("Decrypted: " + Arrays.toString(decrypted));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
