@@ -17,7 +17,8 @@ import javax.crypto.spec.*;
 public class Server {
 	static OutputStream clientOutputStream;
 	static InputStream clientInputStream;
-	private static PrivateKey privateKey;
+	private static Key privateKey;
+	private static Key publicKey;
 
 	static void respondSuccess(String action) {
 		PrintStream outputToClient = new PrintStream(clientOutputStream, true);
@@ -45,7 +46,7 @@ public class Server {
 		return true;
 	}
 
-	static boolean addNewUser(String username, String passwordHash) {
+	static boolean addNewUser(String username, String encryptedPasswordHash) {
 		try {
 			System.out.println(username);
 			if (SecurityHelper.userExists(username)) {
@@ -54,6 +55,7 @@ public class Server {
 			}
 
 			FileWriter passwordWriter = new FileWriter("shared_data/user_hashed_passwords.csv", true);
+			String passwordHash = SecurityHelper.decryptAssymetric(encryptedPasswordHash, privateKey);
 			passwordWriter.write(username + "," + passwordHash + "\n");
 			passwordWriter.close();
 
@@ -79,7 +81,7 @@ public class Server {
 
 				if (entries[0].equals(username)) {
 					// decrypt password hash from client
-					String decryptedPasswordHash = SecurityHelper.decryptWithPrivateKey(passwordHash, privateKey);
+					String decryptedPasswordHash = SecurityHelper.decryptAssymetric(passwordHash, privateKey);
 
 					if (entries[1].equals(decryptedPasswordHash)) {
 						System.out.println("User " + username + " logged in succesfully");
@@ -140,6 +142,7 @@ public class Server {
 
 			usernameFromClient = usernameFromClient.substring("Username:".length());
 			hashedPasswordFromClient = hashedPasswordFromClient.substring("Password:".length());
+			publicKey = SecurityHelper.getUserPublicKey(usernameFromClient);
 
 			if (newOrExisting.equals("New")) {
 				if (!addNewUser(usernameFromClient, hashedPasswordFromClient)) {
@@ -293,12 +296,12 @@ public class Server {
 					messagingWindow = GeneralHelper.createUI("Server");
 
 					receiveMessageThread = new ReadSocketThread("receive-messages", 
-							clientInputStream, modes, null, sessionKeyIVPair, messagingWindow);
+							clientInputStream, modes, publicKey, sessionKeyIVPair, messagingWindow);
 
 					receiveMessageThread.start();
 
 					sendMessageThread = new WriteSocketThread("send-messages",
-						clientOutputStream, modes, null, sessionKeyIVPair, messagingWindow);
+						clientOutputStream, modes, privateKey, sessionKeyIVPair, messagingWindow);
 
 					sendMessageThread.start();
 

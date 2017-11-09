@@ -24,18 +24,18 @@ class ReadSocketThread implements Runnable
     private InputStream inStream;
     private HashMap<String, Boolean> modes;
     private SecretKey sessionKey;
-    private SecretKey privateKey;
+    private Key publicKey;
     private byte[] iv;
     private MessagingWindow messagingWindow;
 
     ReadSocketThread(String threadName, InputStream inStream, HashMap<String, Boolean> modes, 
-        SecretKey privateKey, SecurityHelper.SessionKeyIVPair sessionKeyIVPair, MessagingWindow window)
+        Key publicKey, SecurityHelper.SessionKeyIVPair sessionKeyIVPair, MessagingWindow window)
     {
         this.inStream = inStream;
         this.threadName = threadName;
         this.modes = modes;
         this.sessionKey = sessionKeyIVPair.sessionKey;
-        this.privateKey = privateKey;
+        this.publicKey = publicKey;
         this.iv = sessionKeyIVPair.initializationVector;
         this.messagingWindow = window;
     }
@@ -50,7 +50,7 @@ class ReadSocketThread implements Runnable
                 continue;
 
             String msg = msgIn.nextLine();
-            String plainMsg = SecurityHelper.parseAndDecryptMessage(msg, modes, sessionKey, privateKey, iv);
+            String plainMsg = SecurityHelper.parseAndDecryptMessage(msg, modes, sessionKey, publicKey, iv);
             DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
             Date date = new Date();
             messagingWindow.writeToMessageWindow(dateFormat.format(date) + " < " + plainMsg);
@@ -59,7 +59,6 @@ class ReadSocketThread implements Runnable
 
     public void start() 
     {
-        GeneralHelper.safePrintln("Starting " +  threadName );
         if(t == null) 
         {
             t = new Thread(this, threadName);
