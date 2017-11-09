@@ -162,6 +162,35 @@ public class Client {
 		}
 	}
 
+	static void verifyCorrectModes(HashMap<String, Boolean> modes) {
+		PrintStream outputToServer = new PrintStream(serverOutputStream);
+
+		String modeString = new String();
+		if (modes.get("confidentiality")) {
+			modeString += "c";
+		}
+		if (modes.get("integrity")) {
+			modeString += "i";
+		}
+		if (modes.get("authentication")) {
+			modeString += "a";
+		}
+
+		outputToServer.println("Modes:" + modeString);
+
+		Scanner serverResponseScanner = new Scanner(serverInputStream);
+		String serverResponse = serverResponseScanner.nextLine();
+
+		if (serverResponse.startsWith("Failure:modeverification")) {
+			System.out.println("Client must be started with the same parameters [-cia] as Server. Exiting");
+			System.exit(0);
+		} else if (!serverResponse.startsWith("Success:modeverification")) {
+			System.out.println("Received unexpected message from Server: " + serverResponse);
+			System.out.println("Exiting");
+			System.exit(0);			
+		}
+	}
+
 	public static void main(String[] args) {
 
 		HashMap<String, Boolean> modes = GeneralHelper.parseCommandLine(args);
@@ -174,6 +203,8 @@ public class Client {
 			Socket serverConnection = new Socket("localhost", 8080);
 			serverOutputStream = serverConnection.getOutputStream();
 			serverInputStream = serverConnection.getInputStream();
+
+			verifyCorrectModes(modes);
 
 			String passwordHash = handleLogin(modes.get("newUser"));
 

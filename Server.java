@@ -191,12 +191,48 @@ public class Server {
 
 			return new SecurityHelper.SessionKeyIVPair(sessionKey, initializationVector);
 		} else {
-			System.out.println("Client did not follow protocol");
+			System.out.println("Client sent unexpected message during session key exchange: " + clientMessage);
 			respondFailure("sessionkey");
 			//TODO: don't just exit? keep server up to try again?
 			System.exit(0);
 			return null;
 		}
+	}
+
+	static boolean verifyClientModes(HashMap<String, Boolean> modes) {
+		Scanner clientMessageScanner = new Scanner(clientInputStream);
+		String clientMessage = clientMessageScanner.nextLine();
+
+		String responseIdentifier = "modeverification";
+		String messageHeader = "Modes:";
+
+		if (!clientMessage.startsWith(messageHeader)) {
+			System.out.println("Client sent unexpected message during mode verification: " + clientMessage);
+			respondFailure(responseIdentifier);
+			//TODO: don't just exit? keep server up to try again?
+			System.exit(0);
+			return false;
+		}
+
+		String messageBody = clientMessage.substring(messageHeader.length());
+
+		if (modes.get("confidentiality") && !messageBody.contains("c")) {
+			respondFailure(responseIdentifier);
+			return false;
+		}
+
+		if (modes.get("integrity") && !messageBody.contains("i")) {
+			respondFailure(responseIdentifier);
+			return false;
+		}
+
+		if (modes.get("authentication") && !messageBody.contains("a")) {
+			respondFailure(responseIdentifier);
+			return false;
+		}
+
+		respondSuccess(responseIdentifier);
+		return true;
 	}
 
 
@@ -226,35 +262,27 @@ public class Server {
 					clientOutputStream = clientConnection.getOutputStream();
 					clientInputStream = clientConnection.getInputStream();
 
-					/*
-					BufferedReader bRead = new BufferedReader(new InputStreamReader(clientInputStream));
-					
-					String line = bRead.readLine();
-
-					String flag_strings[] = line.split(" ");
-
-					if (modes.get("confidentiality") != Boolean.parseBoolean(flag_strings[0]) 
-							|| modes.get("integrity") != Boolean.parseBoolean(flag_strings[1]) 
-							|| modes.get("availability") != Boolean.parseBoolean(flag_strings[2])) {
-
-						System.out.println("Client modes do not match Server modes; closing connection.");
-						continue;
-					}
-					*/
-
-					if(messagingWindow != null)
+					if(messagingWindow != null) {
 						messagingWindow.close();
+					}
 
-					if(sendMessageThread != null)
+					if(sendMessageThread != null) {
 						sendMessageThread.stop();
+					}
 
-					if(receiveMessageThread != null)
+					if(receiveMessageThread != null) {
 						receiveMessageThread.stop();
-					
+					}		
+
+					if (!verifyClientModes(modes)) {
+						System.out.println("Client attempted to start connection with incorrect modes");
+						continue;
+					}		
 
 					String hashedPasswordFromClient = handleUserLogin();
-					if(hashedPasswordFromClient.equals(""))
+					if(hashedPasswordFromClient.equals("")) {
 						continue;
+					}
 
 					SecurityHelper.SessionKeyIVPair sessionKeyIVPair = new SecurityHelper.SessionKeyIVPair(null, null);
 
