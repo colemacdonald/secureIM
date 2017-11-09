@@ -285,9 +285,7 @@ public class SecurityHelper {
         File clientKeyFile = new File(userName + "_private_key.key");
 
         // read private key from file, because it exists already
-        if (clientKeyFile.length() > 0){
-            System.out.println("Generating server public/private keypair...");
-            
+        if (clientKeyFile.length() > 0){            
             byte[] keyBytes = null;
 
             Base64.Decoder decoder = Base64.getDecoder();
@@ -302,6 +300,8 @@ public class SecurityHelper {
         }
         // generate and store keypair
         else {
+            System.out.println("Generating public/private keypair, this may take a moment...");
+
             KeyPair clientKP = SecurityHelper.generateUserKeyPair();
             Base64.Encoder encoder = Base64.getEncoder();
 
@@ -311,6 +311,8 @@ public class SecurityHelper {
             keyFile = new FileWriter(PUBLIC_KEY_FILE, true);
             keyFile.write(userName + "," + encoder.encodeToString(clientKP.getPublic().getEncoded()) + "\n");
             keyFile.close();
+
+            System.out.println("Keypair generated and stored");
             return clientKP.getPrivate();
         }
     }

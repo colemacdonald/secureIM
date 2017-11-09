@@ -16,9 +16,8 @@ import javax.crypto.spec.*;
 public class Client {
 	static OutputStream serverOutputStream;
 	static InputStream serverInputStream;
-	private static PrivateKey privateKey;
-	private static PublicKey pubKey;
-	private static PublicKey serverPubKey;
+	private static PrivateKey clientPrivateKey;
+	private static PublicKey serverPublicKey;
 	static String userName;
 
 	// Returns the hashed password of the user
@@ -38,14 +37,7 @@ public class Client {
 			String username = sc.nextLine();
 			userName = username;
 
-			try {
-				privateKey = SecurityHelper.storeKeyPair(userName);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			
 			String plaintextPassword;
-
 			Console console = System.console();
 
 			// get user's password
@@ -82,7 +74,7 @@ public class Client {
 			}
 			outputToServer.println("Username:" + username);
 
-			String encryptedPasswordHashString = SecurityHelper.encryptAssymetric(passwordHashString, serverPubKey);
+			String encryptedPasswordHashString = SecurityHelper.encryptAssymetric(passwordHashString, serverPublicKey);
 
 			// outputToServer.println("Password:" + encryptedPasswordHashString);
 			outputToServer.println("Password:" + encryptedPasswordHashString);
@@ -96,6 +88,14 @@ public class Client {
 			if (newUser) {
 				if (response.startsWith("Success:signup")) {
 					System.out.println("Account created successfully!");
+
+					try {
+						clientPrivateKey = SecurityHelper.storeKeyPair(userName);
+					} catch (Exception e) {
+						e.printStackTrace();
+						System.exit(0);
+					}
+
 					successful = true;
 				} else if (response.startsWith("Failure:signup")) {
 					System.out.println("Account creation failed, please try again");
@@ -112,6 +112,14 @@ public class Client {
 			} else {
 				if (response.startsWith("Success:login")) {
 					System.out.println("Logged in successfully");
+
+					try {
+						clientPrivateKey = SecurityHelper.storeKeyPair(userName);
+					} catch (Exception e) {
+						e.printStackTrace();
+						System.exit(0);
+					}
+			
 					successful = true;
 				} else if (response.startsWith("Failure:login")) {
 					System.out.println("Log in failed, please try again");
@@ -203,7 +211,7 @@ public class Client {
 		HashMap<String, Boolean> modes = GeneralHelper.parseCommandLine(args);
 
 		try {
-			serverPubKey = SecurityHelper.getUserPublicKey("server");
+			serverPublicKey = SecurityHelper.getUserPublicKey("server");
 
 			Socket serverConnection = new Socket("localhost", 8080);
 			serverOutputStream = serverConnection.getOutputStream();
@@ -222,11 +230,11 @@ public class Client {
 			MessagingWindow window = GeneralHelper.createUI("Client");
 
 			ReadSocketThread receiveMessageThread = new ReadSocketThread("receive-messages", 
-					serverInputStream, modes, serverPubKey, sessionKeyIVPair, window);
+					serverInputStream, modes, serverPublicKey, sessionKeyIVPair, window);
 			receiveMessageThread.start();
 
 			WriteSocketThread sendMessageThread = new WriteSocketThread("send-messages", 
-					serverOutputStream, modes, privateKey, sessionKeyIVPair, window);
+					serverOutputStream, modes, clientPrivateKey, sessionKeyIVPair, window);
 			sendMessageThread.start();
 
 			while(true);

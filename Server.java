@@ -17,8 +17,8 @@ import javax.crypto.spec.*;
 public class Server {
 	static OutputStream clientOutputStream;
 	static InputStream clientInputStream;
-	private static Key privateKey;
-	private static Key publicKey;
+	private static Key serverPrivateKey;
+	private static Key clientPublicKey;
 
 	static void respondSuccess(String action) {
 		PrintStream outputToClient = new PrintStream(clientOutputStream, true);
@@ -48,14 +48,13 @@ public class Server {
 
 	static boolean addNewUser(String username, String encryptedPasswordHash) {
 		try {
-			System.out.println(username);
 			if (SecurityHelper.userExists(username)) {
-				respondFailure("exists");
+				respondFailure("signup");
 				return false;
 			}
 
 			FileWriter passwordWriter = new FileWriter("shared_data/user_hashed_passwords.csv", true);
-			String passwordHash = SecurityHelper.decryptAssymetric(encryptedPasswordHash, privateKey);
+			String passwordHash = SecurityHelper.decryptAssymetric(encryptedPasswordHash, serverPrivateKey);
 			passwordWriter.write(username + "," + passwordHash + "\n");
 			passwordWriter.close();
 
@@ -71,6 +70,13 @@ public class Server {
 
 	static boolean verifyExistingUser(String username, String passwordHash) {
 		try {
+			if (!SecurityHelper.userExists(username)) {
+				respondFailure("login");
+				return false;
+			}
+
+			clientPublicKey = SecurityHelper.getUserPublicKey(username);
+
 			System.out.println("Verifying user identity...");
 			String passwordFile = "shared_data/user_hashed_passwords.csv";
 			BufferedReader sessionKeyReader = new BufferedReader(new FileReader(passwordFile));
@@ -81,7 +87,7 @@ public class Server {
 
 				if (entries[0].equals(username)) {
 					// decrypt password hash from client
-					String decryptedPasswordHash = SecurityHelper.decryptAssymetric(passwordHash, privateKey);
+					String decryptedPasswordHash = SecurityHelper.decryptAssymetric(passwordHash, serverPrivateKey);
 
 					if (entries[1].equals(decryptedPasswordHash)) {
 						System.out.println("User " + username + " logged in succesfully");
@@ -141,7 +147,6 @@ public class Server {
 
 			usernameFromClient = usernameFromClient.substring("Username:".length());
 			hashedPasswordFromClient = hashedPasswordFromClient.substring("Password:".length());
-			publicKey = SecurityHelper.getUserPublicKey(usernameFromClient);
 
 			if (newOrExisting.equals("New")) {
 				if (!addNewUser(usernameFromClient, hashedPasswordFromClient)) {
@@ -243,7 +248,7 @@ public class Server {
 
 		try {
 
-			privateKey = SecurityHelper.storeKeyPair("server");
+			serverPrivateKey = SecurityHelper.storeKeyPair("server");
 
 			// create server socket
 			ServerSocket server = new ServerSocket(8080);
@@ -295,12 +300,12 @@ public class Server {
 					messagingWindow = GeneralHelper.createUI("Server");
 
 					receiveMessageThread = new ReadSocketThread("receive-messages", 
-							clientInputStream, modes, publicKey, sessionKeyIVPair, messagingWindow);
+							clientInputStream, modes, clientPublicKey, sessionKeyIVPair, messagingWindow);
 
 					receiveMessageThread.start();
 
 					sendMessageThread = new WriteSocketThread("send-messages",
-						clientOutputStream, modes, privateKey, sessionKeyIVPair, messagingWindow);
+						clientOutputStream, modes, serverPrivateKey, sessionKeyIVPair, messagingWindow);
 
 					sendMessageThread.start();
 
