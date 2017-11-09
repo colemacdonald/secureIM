@@ -10,16 +10,6 @@ import javax.crypto.*;
 
 public class GeneralHelper
 {
-    static class SessionKeyIVPair {
-        public SecretKey sessionKey;
-        public byte[] initializationVector;
-
-        public SessionKeyIVPair(SecretKey sessionKey, byte[] initializationVector) {
-            this.sessionKey = sessionKey;
-            this.initializationVector = initializationVector;
-        }
-    }
-
     static void printUsage()
     {
         System.out.println("Invalid use. Usage:\njava Server [-cian]");
@@ -58,9 +48,9 @@ public class GeneralHelper
         }
     }
 
-    static MessagingWindow createUI() {
+    static MessagingWindow createUI(String windowName) {
         StringBuffer userInputBuffer = new StringBuffer();
-        MessagingWindow window = new MessagingWindow(userInputBuffer);
+        MessagingWindow window = new MessagingWindow(userInputBuffer, windowName);
 
         return window;
     }

@@ -29,7 +29,7 @@ class ReadSocketThread implements Runnable
     private MessagingWindow messagingWindow;
 
     ReadSocketThread(String threadName, InputStream inStream, HashMap<String, Boolean> modes, 
-        Key publicKey, GeneralHelper.SessionKeyIVPair sessionKeyIVPair, MessagingWindow window)
+        Key publicKey, SecurityHelper.SessionKeyIVPair sessionKeyIVPair, MessagingWindow window)
     {
         this.inStream = inStream;
         this.threadName = threadName;
@@ -59,7 +59,6 @@ class ReadSocketThread implements Runnable
 
     public void start() 
     {
-        GeneralHelper.safePrintln("Starting " +  threadName );
         if(t == null) 
         {
             t = new Thread(this, threadName);

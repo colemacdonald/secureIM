@@ -132,7 +132,7 @@ public class Client {
 	}
 
 	// returns session key/initialization vector pair
-	static GeneralHelper.SessionKeyIVPair handleSessionKeyExchange(String passwordHash) {
+	static SecurityHelper.SessionKeyIVPair handleSessionKeyExchange(String passwordHash) {
 
 		SecretKey key = SecurityHelper.generatePasswordBasedKey(passwordHash);
 		String keyHexString = DatatypeConverter.printHexBinary(key.getEncoded());
@@ -155,9 +155,11 @@ public class Client {
 		System.out.println("Session key: " + keyHexString);
 		System.out.println("IV: " + initializationVectorHexString);
 
+		serverResponseScanner.close();
+
 		if (serverResponse.startsWith("Success:sessionkey")) {
 			System.out.println("Session key exchange succeeded");
-			return new GeneralHelper.SessionKeyIVPair(key, initializationVector);
+			return new SecurityHelper.SessionKeyIVPair(key, initializationVector);
 		} else if (serverResponse.startsWith("Failure:sessionkey")) {
 			System.out.println("Session key exchange failed, exiting");
 			System.exit(0);
@@ -175,7 +177,6 @@ public class Client {
 		HashMap<String, Boolean> modes = GeneralHelper.parseCommandLine(args);
 
 		try {
-
 			serverPubKey = SecurityHelper.getUserPublicKey("server");
 
 			Socket serverConnection = new Socket("localhost", 8080);
@@ -184,13 +185,13 @@ public class Client {
 
 			String passwordHash = handleLogin(modes.get("newUser"));
 
-			GeneralHelper.SessionKeyIVPair sessionKeyIVPair = new GeneralHelper.SessionKeyIVPair(null, null);
+			SecurityHelper.SessionKeyIVPair sessionKeyIVPair = new SecurityHelper.SessionKeyIVPair(null, null);
 
 			if (modes.get("confidentiality")) {
 				sessionKeyIVPair = handleSessionKeyExchange(passwordHash);
 			}
 
-			MessagingWindow window = GeneralHelper.createUI();
+			MessagingWindow window = GeneralHelper.createUI("Client");
 
 			ReadSocketThread receiveMessageThread = new ReadSocketThread("receive-messages", 
 					serverInputStream, modes, serverPubKey, sessionKeyIVPair, window);

@@ -49,6 +49,16 @@ public class SecurityHelper {
         return data;
     }
 
+    static class SessionKeyIVPair {
+        public SecretKey sessionKey;
+        public byte[] initializationVector;
+
+        public SessionKeyIVPair(SecretKey sessionKey, byte[] initializationVector) {
+            this.sessionKey = sessionKey;
+            this.initializationVector = initializationVector;
+        }
+    }
+
     /*
      * Uses java.security.MessageDigest to compute a SHA-256 hash
      * Returns a string of hex characters
@@ -73,7 +83,6 @@ public class SecurityHelper {
 
     /*
      * To be used when receiveing a message - check received digest against computed one
-     * TODO: Will the digest have been seperated from the msg at this point?
      */
     static boolean confirmDigest(byte[] received)
     {
@@ -130,8 +139,8 @@ public class SecurityHelper {
         {
             if(!confirmDigest(encryptedBytes))
             {
-                System.out.println("Digest did not match. Likely tampered with.");
-                //TODO: what to do?
+                GeneralHelper.safePrintln("Digest did not match. Likely tampered with.");
+                return "";
             }
             justMessage = Arrays.copyOfRange(encryptedBytes, 0, encryptedBytes.length - DIGEST_LENGTH);
         } else {
