@@ -107,7 +107,7 @@ public class SecurityHelper {
 
         /* INTEGRITY */
         ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
-        try{
+        try {
             byteStream.write(encryptedWithSession);
 
             if(modes.get("integrity")) { // compute and add checksum
@@ -219,7 +219,7 @@ public class SecurityHelper {
             cipher.init(Cipher.ENCRYPT_MODE, key);
             
             String encryptedData = Base64.getEncoder().encodeToString(cipher.doFinal(plaintext.getBytes()));
-            System.out.println("encrypted data: " + encryptedData);
+            //System.out.println("encrypted data: " + encryptedData);
             return encryptedData;
 
         } catch (Exception e) {
@@ -363,14 +363,11 @@ public class SecurityHelper {
 
                 line = keys.readLine();
             }
-
             return null;
         } catch (Exception e) {
-            e.printStackTrace();
             return null;
         }
     }
-
 
     public static void main(String[] args) {
         String password = "cailan";

@@ -160,8 +160,6 @@ public class Client {
 		Scanner serverResponseScanner = new Scanner(serverInputStream);
 		String serverResponse = serverResponseScanner.nextLine();
 
-		serverResponseScanner.close();
-
 		if (serverResponse.startsWith("Success:sessionkey")) {
 			System.out.println("Session key exchange succeeded");
 			return new SecurityHelper.SessionKeyIVPair(key, initializationVector);

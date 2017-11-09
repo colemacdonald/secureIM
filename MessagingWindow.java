@@ -65,19 +65,16 @@ public class MessagingWindow implements ActionListener {
 
 		    public void keyReleased(KeyEvent event) {	
 
-		 		if(event.getKeyCode()==KeyEvent.VK_ENTER){
-		 			
-					//synchronized(inputReady) {
-						String content = inputTextField.getText();
-						
+		 		if(event.getKeyCode()==KeyEvent.VK_ENTER) {
+					String content = inputTextField.getText();
+
+					if(!content.equals("")) {
 						DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 						Date date = new Date();
 						writeToMessageWindow(dateFormat.format(date) + " > " + content);
-			        	//System.out.println(content);
-			        	userInputBuffer.append(content);
-			        	inputTextField.setText("");
-			        	//inputReady.notify();
-		        	//}
+						userInputBuffer.append(content);
+						inputTextField.setText("");
+					}
 		       	}
 		    }
 		});

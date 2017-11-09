@@ -48,39 +48,21 @@ class WriteSocketThread implements Runnable
 
         while(!Thread.currentThread().isInterrupted())
         {
-            // wait on input (without wasting CPU time)
-            //synchronized(inputReady) {
-               // while (userInputBuffer.length() == 0) {
-                    //try {
-                        // This is signalled within UserInput.java
-                        //inputReady.wait();
+            if(userInputBuffer.length() > 0) {
+                String plaintext;
 
-                        if(userInputBuffer.length() > 0) {
-                            String plaintext;
+                synchronized(userInputBuffer) {
+                    plaintext = userInputBuffer.toString();
+                    userInputBuffer.setLength(0);                                
+                }
 
-                            synchronized(userInputBuffer) {
-                                plaintext = userInputBuffer.toString();
-                                userInputBuffer.setLength(0);                                
-                            }
+                String msg = SecurityHelper.prepareMessage(plaintext, modes, 
+                    sessionKey, privateKey, iv);
 
-                            String msg = SecurityHelper.prepareMessage(plaintext, modes, 
-                                sessionKey, privateKey, iv);
-
-                            //GeneralHelper.safePrintln("Sending: " + msg + " - " + SecurityHelper.parseAndDecryptMessage(msg, modes, sessionKey, sessionKey, iv));
-
-                            System.out.println("Sending message: " + msg);
-                            socketWrite.println(msg);
-                            socketWrite.flush();
-                            
-                            // DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-                            // Date date = new Date();
-                            // GeneralHelper.safePrintln("> " + dateFormat.format(date) + " - " + plaintext);                       
-                        }
-                    //} catch (InterruptedException e) {
-                    //    e.printStackTrace();
-                    //}
-                //}
-            //}
+                System.out.println("Sending message: " + msg);
+                socketWrite.println(msg);
+                socketWrite.flush();
+            }
         }
     }
 
