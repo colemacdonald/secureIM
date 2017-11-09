@@ -16,9 +16,10 @@ import javax.crypto.spec.*;
 public class Client {
 	static OutputStream serverOutputStream;
 	static InputStream serverInputStream;
-	private static PrivateKey privKey;
+	private static PrivateKey privateKey;
 	private static PublicKey pubKey;
 	private static PublicKey serverPubKey;
+	static String userName;
 
 	// Returns the hashed password of the user
 	static String handleLogin(boolean newUser) {
@@ -35,6 +36,13 @@ public class Client {
 			// get user's username
 			System.out.print("Please enter " + qualifier + " username: ");
 			String username = sc.nextLine();
+			userName = username;
+
+			try {
+				privateKey = SecurityHelper.storeKeyPair(userName);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 			
 			String plaintextPassword;
 
@@ -74,7 +82,7 @@ public class Client {
 			}
 			outputToServer.println("Username:" + username);
 
-			String encryptedPasswordHashString = SecurityHelper.encryptWithPublicKey(passwordHashString, serverPubKey);
+			String encryptedPasswordHashString = SecurityHelper.encryptAssymetric(passwordHashString, serverPubKey);
 
 			// outputToServer.println("Password:" + encryptedPasswordHashString);
 			outputToServer.println("Password:" + encryptedPasswordHashString);
@@ -147,6 +155,8 @@ public class Client {
 		System.out.println("Session key: " + keyHexString);
 		System.out.println("IV: " + initializationVectorHexString);
 
+		serverResponseScanner.close();
+
 		if (serverResponse.startsWith("Success:sessionkey")) {
 			System.out.println("Session key exchange succeeded");
 			return new SecurityHelper.SessionKeyIVPair(key, initializationVector);
@@ -167,9 +177,7 @@ public class Client {
 		HashMap<String, Boolean> modes = GeneralHelper.parseCommandLine(args);
 
 		try {
-
 			serverPubKey = SecurityHelper.getUserPublicKey("server");
-			KeyPair clientKP = SecurityHelper.generateUserKeyPair();
 
 			Socket serverConnection = new Socket("localhost", 8080);
 			serverOutputStream = serverConnection.getOutputStream();
@@ -186,11 +194,11 @@ public class Client {
 			MessagingWindow window = GeneralHelper.createUI("Client");
 
 			ReadSocketThread receiveMessageThread = new ReadSocketThread("receive-messages", 
-					serverInputStream, modes, null, sessionKeyIVPair, window);
+					serverInputStream, modes, serverPubKey, sessionKeyIVPair, window);
 			receiveMessageThread.start();
 
 			WriteSocketThread sendMessageThread = new WriteSocketThread("send-messages", 
-					serverOutputStream, modes, null, sessionKeyIVPair, window);
+					serverOutputStream, modes, privateKey, sessionKeyIVPair, window);
 			sendMessageThread.start();
 
 			while(true);

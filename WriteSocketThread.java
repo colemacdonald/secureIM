@@ -23,7 +23,7 @@ class WriteSocketThread implements Runnable
     private OutputStream outputStream;
     private HashMap<String, Boolean> modes;
     private SecretKey sessionKey;
-    private SecretKey privateKey;
+    private Key privateKey;
     private byte[] iv;
     private MessagingWindow messagingWindow;
 
