@@ -64,7 +64,7 @@ public class Client {
 			}
 
 			byte[] passwordHash = SecurityHelper.computeDigest(plaintextPassword.getBytes());
-			passwordHashString = DatatypeConverter.printHexBinary(passwordHash);
+			passwordHashString = SecurityHelper.bytesToHex(passwordHash);
 
 			// Send user login information to server
 			if (newUser) {
@@ -74,9 +74,9 @@ public class Client {
 			}
 			outputToServer.println("Username:" + username);
 
-			String encryptedPasswordHashString = SecurityHelper.encryptAssymetric(passwordHashString, serverPublicKey);
+			byte[] encryptedPasswordHash = SecurityHelper.encryptAssymetric(passwordHash, serverPublicKey);
+			String encryptedPasswordHashString = SecurityHelper.bytesToHex(encryptedPasswordHash);
 
-			// outputToServer.println("Password:" + encryptedPasswordHashString);
 			outputToServer.println("Password:" + encryptedPasswordHashString);
 			outputToServer.flush();
 
@@ -141,18 +141,19 @@ public class Client {
 
 	// returns session key/initialization vector pair
 	static SecurityHelper.SessionKeyIVPair handleSessionKeyExchange(String passwordHash) {
+		System.out.println("Exchanging session key...");
 
 		SecretKey key = SecurityHelper.generatePasswordBasedKey(passwordHash);
-		String keyHexString = DatatypeConverter.printHexBinary(key.getEncoded());
 
 		SecureRandom random = new SecureRandom();
 		byte[] initializationVector = new byte[16];
 		random.nextBytes(initializationVector);
 		String initializationVectorHexString = DatatypeConverter.printHexBinary(initializationVector);
 
-		String message = "SessionKey:" + keyHexString + "," + initializationVectorHexString;
+		byte[] encryptedSessionKey = SecurityHelper.encryptAssymetric(key.getEncoded(), serverPublicKey);
+		String encryptedSessionKeyHexString = SecurityHelper.bytesToHex(encryptedSessionKey);
 
-		// TODO important: encrypt this message with server's public key!
+		String message = "SessionKey:" + encryptedSessionKeyHexString + "," + initializationVectorHexString;
 
 		PrintStream outputToServer = new PrintStream(serverOutputStream);
 		outputToServer.println(message);
@@ -213,10 +214,9 @@ public class Client {
 			serverOutputStream = serverConnection.getOutputStream();
 			serverInputStream = serverConnection.getInputStream();
 
-			serverPublicKey = SecurityHelper.getUserPublicKey("server");
-
 			verifyCorrectModes(modes);
 
+			serverPublicKey = SecurityHelper.getUserPublicKey("server");
 			String passwordHash = handleLogin(modes.get("newUser"));
 
 			SecurityHelper.SessionKeyIVPair sessionKeyIVPair = new SecurityHelper.SessionKeyIVPair(null, null);

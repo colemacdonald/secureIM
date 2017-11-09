@@ -46,7 +46,7 @@ public class Server {
 		return true;
 	}
 
-	static boolean addNewUser(String username, String encryptedPasswordHash) {
+	static boolean addNewUser(String username, String passwordHashHexString) {
 		try {
 			if (SecurityHelper.userExists(username)) {
 				respondFailure("signup");
@@ -54,8 +54,8 @@ public class Server {
 			}
 
 			FileWriter passwordWriter = new FileWriter("shared_data/user_hashed_passwords.csv", true);
-			String passwordHash = SecurityHelper.decryptAssymetric(encryptedPasswordHash, serverPrivateKey);
-			passwordWriter.write(username + "," + passwordHash + "\n");
+			
+			passwordWriter.write(username + "," + passwordHashHexString + "\n");
 			passwordWriter.close();
 
 			respondSuccess("signup");
@@ -68,7 +68,7 @@ public class Server {
 		}
 	}
 
-	static boolean verifyExistingUser(String username, String passwordHash) {
+	static boolean verifyExistingUser(String username, String passwordHashHexString) {
 		try {
 			if (!SecurityHelper.userExists(username)) {
 				respondFailure("login");
@@ -86,10 +86,8 @@ public class Server {
 				String[] entries = line.split(",");
 
 				if (entries[0].equals(username)) {
-					// decrypt password hash from client
-					String decryptedPasswordHash = SecurityHelper.decryptAssymetric(passwordHash, serverPrivateKey);
 
-					if (entries[1].equals(decryptedPasswordHash)) {
+					if (entries[1].equals(passwordHashHexString)) {
 						System.out.println("User " + username + " logged in succesfully");
 						respondSuccess("login");
 						return true;
@@ -122,38 +120,42 @@ public class Server {
 
 	// Returns hashed password
 	static String handleUserLogin() {
-		String hashedPasswordFromClient = "";
+		String passwordHashHexString = new String();
 
 		boolean successful = false;
 		do {
 			// Read login information from client
 			Scanner clientInputScanner = new Scanner(clientInputStream);
-			String newOrExisting = "";
-			String usernameFromClient = "";
+			String newOrExisting = new String();
+			String usernameField = new String();
+			String passwordField = new String();
 
 			try{
 				newOrExisting = clientInputScanner.nextLine();
-				usernameFromClient = clientInputScanner.nextLine();
-				hashedPasswordFromClient = clientInputScanner.nextLine();
+				usernameField = clientInputScanner.nextLine();
+				passwordField = clientInputScanner.nextLine();
 			} catch(NoSuchElementException e) {
 				clientInputScanner.close();
 				return "";
 			}			
 
-			if (!validateClientInput(newOrExisting, usernameFromClient, hashedPasswordFromClient)) {
+			if (!validateClientInput(newOrExisting, usernameField, passwordField)) {
 				System.out.println("Client did not follow correct protocol, exiting");
 				System.exit(0);
 			}
 
-			usernameFromClient = usernameFromClient.substring("Username:".length());
-			hashedPasswordFromClient = hashedPasswordFromClient.substring("Password:".length());
+			String usernameFromClient = usernameField.substring("Username:".length());
+			String encryptedPasswordHashFromClient = passwordField.substring("Password:".length());
+			byte[] encryptedPasswordHash = SecurityHelper.hexStringToByteArray(encryptedPasswordHashFromClient);
+			byte[] passwordHash = SecurityHelper.decryptAssymetric(encryptedPasswordHash, serverPrivateKey);
+			passwordHashHexString = SecurityHelper.bytesToHex(passwordHash);
 
 			if (newOrExisting.equals("New")) {
-				if (!addNewUser(usernameFromClient, hashedPasswordFromClient)) {
+				if (!addNewUser(usernameFromClient, passwordHashHexString)) {
 					continue;
 				}
 			} else if (newOrExisting.equals("Existing")) {
-				if (!verifyExistingUser(usernameFromClient, hashedPasswordFromClient)) {
+				if (!verifyExistingUser(usernameFromClient, passwordHashHexString)) {
 					continue;
 				}
 			} else {
@@ -168,7 +170,7 @@ public class Server {
 
 		} while(!successful);
 
-		return hashedPasswordFromClient;
+		return passwordHashHexString;
 	}
 
 	// Returns session key/initialization vector pair
@@ -176,18 +178,19 @@ public class Server {
 		Scanner clientMessageScanner = new Scanner(clientInputStream);
 		String clientMessage = clientMessageScanner.nextLine();
 
-		// TODO important: decrypt client message with server private key!
-
 		String messageHeader = "SessionKey:";
 		int headerLength = messageHeader.length();
 		if (clientMessage.startsWith(messageHeader)) {
 			String messageBody = clientMessage.substring(messageHeader.length());
 			int commaIndex = messageBody.indexOf(',');
 
-			String sessionKeyHexString = messageBody.substring(0, commaIndex);
+			String encryptedSessionKeyHexString = messageBody.substring(0, commaIndex);
+			byte[] encryptedSessionKeyBytes = SecurityHelper.hexStringToByteArray(encryptedSessionKeyHexString);
+
+			byte[] sessionKeyBytes = SecurityHelper.decryptAssymetric(encryptedSessionKeyBytes, serverPrivateKey);
+			
 			String initializationVectorHexString = messageBody.substring(commaIndex + 1);
 
-			byte[] sessionKeyBytes = DatatypeConverter.parseHexBinary(sessionKeyHexString);
 			SecretKey sessionKey = new SecretKeySpec(sessionKeyBytes, 0, sessionKeyBytes.length, "AES");
 
 			byte[] initializationVector = DatatypeConverter.parseHexBinary(initializationVectorHexString);
