@@ -50,7 +50,6 @@ class ReadSocketThread implements Runnable
                 continue;
 
             String msg = msgIn.nextLine();
-            System.out.println("Receiving message: " + msg);
             String plainMsg = SecurityHelper.parseAndDecryptMessage(msg, modes, sessionKey, publicKey, iv);
             DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
             Date date = new Date();

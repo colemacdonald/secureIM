@@ -119,7 +119,7 @@ public class SecurityHelper {
             /* AUTHENTICATION / INTEGRITY */
             if(modes.get("authentication") || modes.get("integrity")) {// encrypt with private key
                 //TODO important: make this work!
-                //encryptedWithSession = Base64.getDecoder().decode(encryptAssymetric(new String(Base64.getEncoder().encodeToString(encryptedWithSession)), privateKey));
+                encryptedWithSession = encryptAssymetric(encryptedWithSession, privateKey);
             }
         }
         catch (IOException e)
@@ -131,13 +131,13 @@ public class SecurityHelper {
 
     static String parseAndDecryptMessage(String encryptedMessage, HashMap<String, Boolean> modes, SecretKey sessionKey, Key publicKey, byte[] iv)
     {   
-        if(modes.get("authentication")) // decrypt using public key
+        byte[] encryptedBytes = hexStringToByteArray(encryptedMessage);
+        if(modes.get("authentication")|| modes.get("integrity")) // decrypt using public key
         {
             //TODO important: make this work!
-            //encryptedMessage = decryptAssymetric(Base64.getEncoder().encodeToString(hexStringToByteArray(encryptedMessage)), publicKey);
+            encryptedBytes = decryptAssymetric(encryptedBytes, publicKey);
         }
 
-        byte[] encryptedBytes = hexStringToByteArray(encryptedMessage);
         byte[] justMessage;
         if(modes.get("integrity")) // seperate message from digest and compare
         {
