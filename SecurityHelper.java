@@ -283,9 +283,28 @@ public class SecurityHelper {
     static PrivateKey storeKeyPair(String userName) throws Exception{
 
         File clientKeyFile = new File(userName + "_private_key.key");
+        PublicKey userPublicKey = getUserPublicKey(userName);
 
+        // generate and store keypair
+        if (clientKeyFile.length() == 0 || userPublicKey == null) {
+            System.out.println("Generating public/private keypair, this may take a moment...");
+
+            KeyPair clientKP = SecurityHelper.generateUserKeyPair();
+            Base64.Encoder encoder = Base64.getEncoder();
+
+            Writer keyFile = new FileWriter(userName + "_private_key.key", false);
+            keyFile.write(encoder.encodeToString(clientKP.getPrivate().getEncoded()));
+            keyFile.close();
+
+            keyFile = new FileWriter(PUBLIC_KEY_FILE, true);
+            keyFile.write(userName + "," + encoder.encodeToString(clientKP.getPublic().getEncoded()) + "\n");
+            keyFile.close();
+
+            System.out.println("Keypair generated and stored");
+            return clientKP.getPrivate();
+        }
         // read private key from file, because it exists already
-        if (clientKeyFile.length() > 0){            
+        else {            
             byte[] keyBytes = null;
 
             Base64.Decoder decoder = Base64.getDecoder();
@@ -297,23 +316,6 @@ public class SecurityHelper {
             KeyFactory kf = KeyFactory.getInstance("RSA");
             PrivateKey privateKey = kf.generatePrivate(ks);
             return privateKey;
-        }
-        // generate and store keypair
-        else {
-            System.out.println("Generating public/private keypair, this may take a moment...");
-
-            KeyPair clientKP = SecurityHelper.generateUserKeyPair();
-            Base64.Encoder encoder = Base64.getEncoder();
-
-            Writer keyFile = new FileWriter(userName + "_private_key.key");
-            keyFile.write(encoder.encodeToString(clientKP.getPrivate().getEncoded()));
-            keyFile.close();
-            keyFile = new FileWriter(PUBLIC_KEY_FILE, true);
-            keyFile.write(userName + "," + encoder.encodeToString(clientKP.getPublic().getEncoded()) + "\n");
-            keyFile.close();
-
-            System.out.println("Keypair generated and stored");
-            return clientKP.getPrivate();
         }
     }
 
@@ -345,9 +347,8 @@ public class SecurityHelper {
     static PublicKey getUserPublicKey(String userName) {
         try {
             BufferedReader keys = new BufferedReader(new FileReader(PUBLIC_KEY_FILE));
-            String line;
-            while(true){
-                line = keys.readLine();
+            String line = keys.readLine();
+            while(line != null) {
                 if (line.startsWith(userName)){
                     String[] serverKey = line.split(",");
                     byte[] keyBytes = serverKey[1].getBytes();
@@ -357,10 +358,11 @@ public class SecurityHelper {
                     PublicKey publicKey = kf.generatePublic(ks);
                     return publicKey;
                 }
-                else {
-                    continue;
-                }
+
+                line = keys.readLine();
             }
+
+            return null;
         } catch (Exception e) {
             e.printStackTrace();
             return null;

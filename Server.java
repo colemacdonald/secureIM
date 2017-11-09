@@ -223,17 +223,17 @@ public class Server {
 
 		String messageBody = clientMessage.substring(messageHeader.length());
 
-		if (modes.get("confidentiality") && !messageBody.contains("c")) {
+		if (modes.get("confidentiality") != messageBody.contains("c")) {
 			respondFailure(responseIdentifier);
 			return false;
 		}
 
-		if (modes.get("integrity") && !messageBody.contains("i")) {
+		if (modes.get("integrity") != messageBody.contains("i")) {
 			respondFailure(responseIdentifier);
 			return false;
 		}
 
-		if (modes.get("authentication") && !messageBody.contains("a")) {
+		if (modes.get("authentication") != messageBody.contains("a")) {
 			respondFailure(responseIdentifier);
 			return false;
 		}
@@ -253,7 +253,6 @@ public class Server {
 			// create server socket
 			ServerSocket server = new ServerSocket(8080);
 			server.setReuseAddress(true);
-			System.out.println("Waiting for client...");
 
 			ReadSocketThread receiveMessageThread = null;
 			WriteSocketThread sendMessageThread = null;
@@ -262,6 +261,7 @@ public class Server {
 			while (true) {
 				try {
 					// wait for client connection
+					System.out.println("Awaiting client connection...");
 					Socket clientConnection = server.accept();
 					System.out.println("Client connected!");
 

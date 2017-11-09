@@ -211,11 +211,11 @@ public class Client {
 		HashMap<String, Boolean> modes = GeneralHelper.parseCommandLine(args);
 
 		try {
-			serverPublicKey = SecurityHelper.getUserPublicKey("server");
-
 			Socket serverConnection = new Socket("localhost", 8080);
 			serverOutputStream = serverConnection.getOutputStream();
 			serverInputStream = serverConnection.getInputStream();
+
+			serverPublicKey = SecurityHelper.getUserPublicKey("server");
 
 			verifyCorrectModes(modes);
 
