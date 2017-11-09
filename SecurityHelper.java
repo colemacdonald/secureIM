@@ -117,7 +117,7 @@ public class SecurityHelper {
             encryptedWithSession = byteStream.toByteArray();
 
             /* AUTHENTICATION / INTEGRITY */
-            if(modes.get("authentication") || modes.get("integrity")) {// encrypt with private key
+            if(modes.get("authentication") || modes.get("integrity")) { // encrypt with private key
                 //TODO important: make this work!
                 encryptedWithSession = encryptAssymetric(encryptedWithSession, privateKey);
             }
