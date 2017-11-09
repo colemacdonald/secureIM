@@ -105,11 +105,6 @@ public class SecurityHelper {
             encryptedWithSession = message.getBytes();
         }
 
-        /* AUTHENTICATION / INTEGRITY */
-        if(modes.get("authentication") || modes.get("integrity")) {// encrypt with private key
-            encryptedWithSession = Base64.getDecoder().decode(encryptAssymetric(new String(Base64.getEncoder().encodeToString(encryptedWithSession)), privateKey));
-        }
-
         /* INTEGRITY */
         ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
         try{
@@ -117,6 +112,11 @@ public class SecurityHelper {
 
             if(modes.get("integrity")) { // compute and add checksum
                 byteStream.write(computeDigest(encryptedWithSession));
+            }
+
+            /* AUTHENTICATION / INTEGRITY */
+            if(modes.get("authentication") || modes.get("integrity")) {// encrypt with private key
+                encryptedWithSession = Base64.getDecoder().decode(encryptAssymetric(new String(Base64.getEncoder().encodeToString(encryptedWithSession)), privateKey));
             }
         }
         catch (IOException e)
@@ -218,8 +218,6 @@ public class SecurityHelper {
             
             String encryptedData = Base64.getEncoder().encodeToString(cipher.doFinal(plaintext.getBytes()));
             
-            System.out.println(encryptedData);
-
             return encryptedData;
 
         } catch (Exception e) {

@@ -28,7 +28,7 @@ class WriteSocketThread implements Runnable
     private MessagingWindow messagingWindow;
 
     WriteSocketThread(String threadName, OutputStream outputStream, HashMap<String, Boolean> modes,
-        SecretKey privateKey, SecurityHelper.SessionKeyIVPair sessionKeyIVPair, MessagingWindow window)
+        Key privateKey, SecurityHelper.SessionKeyIVPair sessionKeyIVPair, MessagingWindow window)
     {
         this.outputStream = outputStream;
         this.threadName = threadName;
