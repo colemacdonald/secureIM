@@ -23,12 +23,12 @@ class WriteSocketThread implements Runnable
     private OutputStream outputStream;
     private HashMap<String, Boolean> modes;
     private SecretKey sessionKey;
-    private SecretKey privateKey;
+    private Key privateKey;
     private byte[] iv;
     private MessagingWindow messagingWindow;
 
     WriteSocketThread(String threadName, OutputStream outputStream, HashMap<String, Boolean> modes,
-        SecretKey privateKey, GeneralHelper.SessionKeyIVPair sessionKeyIVPair, MessagingWindow window)
+        Key privateKey, GeneralHelper.SessionKeyIVPair sessionKeyIVPair, MessagingWindow window)
     {
         this.outputStream = outputStream;
         this.threadName = threadName;

@@ -85,7 +85,7 @@ public class SecurityHelper {
     }
 
     static String prepareMessage(String message, HashMap<String, Boolean> modes, 
-        SecretKey sessionKey, SecretKey privateKey, byte[] iv)
+        SecretKey sessionKey, Key privateKey, byte[] iv)
     {
         /* CONFIDENTIALITY */
         byte[] encryptedWithSession;
@@ -94,6 +94,11 @@ public class SecurityHelper {
            encryptedWithSession = encryptWithSessionKey(message.getBytes(), iv, sessionKey);
         } else {
             encryptedWithSession = message.getBytes();
+        }
+
+        /* AUTHENTICATION / INTEGRITY */
+        if(modes.get("authentication") || modes.get("integrity")) {// encrypt with private key
+            encryptedWithSession = Base64.getDecoder().decode(encryptAssymetric(new String(Base64.getEncoder().encodeToString(encryptedWithSession)), privateKey));
         }
 
         /* INTEGRITY */
@@ -109,22 +114,17 @@ public class SecurityHelper {
         {
             System.out.println("Exception: " + e);
         }
-
-        /* AUTHENTICATION / INTEGRITY */
-        if(modes.get("authentication") || modes.get("integrity")) {// encrypt with private key
-
-        }
         return bytesToHex(byteStream.toByteArray());
     }
 
-    static String parseAndDecryptMessage(String encryptedMessage, HashMap<String, Boolean> modes, SecretKey sessionKey, SecretKey privateKey, byte[] iv)
-    {
-        byte[] encryptedBytes = hexStringToByteArray(encryptedMessage);
+    static String parseAndDecryptMessage(String encryptedMessage, HashMap<String, Boolean> modes, SecretKey sessionKey, Key publicKey, byte[] iv)
+    {   
         if(modes.get("authentication")) // decrypt using public key
         {
-
+            encryptedMessage = decryptAssymetric(encryptedMessage, publicKey);
         }
 
+        byte[] encryptedBytes = hexStringToByteArray(encryptedMessage);
         byte[] justMessage;
         if(modes.get("integrity")) // seperate message from digest and compare
         {
@@ -189,50 +189,28 @@ public class SecurityHelper {
         try{
             KeyPairGenerator keypg = KeyPairGenerator.getInstance("RSA");
             SecureRandom random = new SecureRandom();
+
             keypg.initialize(2048, random);
+
             KeyPair keyP = keypg.generateKeyPair();
+
             return keyP;
+
         } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
     }
-
-    // Depricated, see encryptAssymetric
-    /*
-    static String encryptWithPrivateKey(String plaintext, PrivateKey privateKey) {
-
-        try {
-            Cipher privCipher = Cipher.getInstance("RSA");
-            privCipher.init(Cipher.ENCRYPT_MODE, privateKey);
-            String encryptedData = Base64.getEncoder().encodeToString(privCipher.doFinal(plaintext.getBytes()));
-            return encryptedData;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-    
-    static String decryptWithPublicKey(String ciphertext, PublicKey publicKey) {
-
-        try {
-            Cipher pubCipher = Cipher.getInstance("RSA");
-            pubCipher.init(Cipher.DECRYPT_MODE, publicKey);
-            String decryptedData = new String(pubCipher.doFinal(Base64.getDecoder().decode(ciphertext)));
-            return decryptedData;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-    */
 
     static String encryptAssymetric(String plaintext, Key key) {
         try {
             Cipher cipher = Cipher.getInstance("RSA");
             cipher.init(Cipher.ENCRYPT_MODE, key);
+            
             String encryptedData = Base64.getEncoder().encodeToString(cipher.doFinal(plaintext.getBytes()));
+            
             return encryptedData;
+
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -243,39 +221,16 @@ public class SecurityHelper {
         try {
             Cipher cipher = Cipher.getInstance("RSA");
             cipher.init(Cipher.DECRYPT_MODE, key);
+            
             String decryptedData = new String(cipher.doFinal(Base64.getDecoder().decode(ciphertext)));
+
             return decryptedData;
+
         } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
     }
-
-    /*
-    static String encryptWithPublicKey(String plaintext, PublicKey pubKey) {
-        
-        try {
-            Cipher pubCipher = Cipher.getInstance("RSA");
-            pubCipher.init(Cipher.ENCRYPT_MODE, pubKey);
-            String encryptedData = Base64.getEncoder().encodeToString(pubCipher.doFinal(plaintext.getBytes()));
-            return encryptedData;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-    
-
-    static String decryptWithPrivateKey(String ciphertext, PrivateKey privKey) throws Exception{
-        
-        Cipher privCipher = Cipher.getInstance("RSA");
-        privCipher.init(Cipher.DECRYPT_MODE, privKey);
-        String decryptedData = new String(privCipher.doFinal(Base64.getDecoder().decode(ciphertext)));
-
-        return decryptedData;
-    }
-
-    */
 
     static SecretKey generatePasswordBasedKey(String password) {
         try {
@@ -343,8 +298,8 @@ public class SecurityHelper {
             Writer keyFile = new FileWriter(userName + "_private_key.key");
             keyFile.write(encoder.encodeToString(clientKP.getPrivate().getEncoded()));
             keyFile.close();
-            keyFile = new FileWriter(PUBLIC_KEY_FILE);
-            keyFile.write(userName + "," + encoder.encodeToString(clientKP.getPublic().getEncoded()));
+            keyFile = new FileWriter(PUBLIC_KEY_FILE, true);
+            keyFile.write(userName + "," + encoder.encodeToString(clientKP.getPublic().getEncoded()) + "\n");
             keyFile.close();
             return clientKP.getPrivate();
         }
@@ -375,23 +330,31 @@ public class SecurityHelper {
     }
 
     // Returns given username's public key from shared key-store
-    static PublicKey getUserPublicKey(String userName) throws Exception{
-        BufferedReader keys = new BufferedReader(new FileReader(PUBLIC_KEY_FILE));
-        String line;
-        while(true){
-            line = keys.readLine();
-            if (line.startsWith(userName)){
-                String[] serverKey = line.split(",");
-                byte[] keyBytes = serverKey[1].getBytes();
-                Base64.Decoder decoder = Base64.getDecoder();
-                X509EncodedKeySpec ks = new X509EncodedKeySpec(decoder.decode(keyBytes));
-                KeyFactory kf = KeyFactory.getInstance("RSA");
-                PublicKey publicKey = kf.generatePublic(ks);
-                return publicKey;
+    static PublicKey getUserPublicKey(String userName) {
+        try {
+            BufferedReader keys = new BufferedReader(new FileReader(PUBLIC_KEY_FILE));
+            String line;
+            while(true){
+                line = keys.readLine();
+                System.out.println(userName);
+                System.out.println(line);
+                if (line.startsWith(userName)){
+                    String[] serverKey = line.split(",");
+                    byte[] keyBytes = serverKey[1].getBytes();
+                    Base64.Decoder decoder = Base64.getDecoder();
+                    X509EncodedKeySpec ks = new X509EncodedKeySpec(decoder.decode(keyBytes));
+                    KeyFactory kf = KeyFactory.getInstance("RSA");
+                    PublicKey publicKey = kf.generatePublic(ks);
+                    System.out.println(serverKey[1]);
+                    return publicKey;
+                }
+                else {
+                    continue;
+                }
             }
-            else {
-                continue;
-            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
         }
     }
 
