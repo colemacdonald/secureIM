@@ -95,8 +95,8 @@ public class Client {
 						e.printStackTrace();
 						System.exit(0);
 					}
-
 					successful = true;
+
 				} else if (response.startsWith("Failure:signup")) {
 					System.out.println("Account creation failed, please try again");
 					continue;
@@ -118,9 +118,9 @@ public class Client {
 					} catch (Exception e) {
 						e.printStackTrace();
 						System.exit(0);
-					}
-			
+					}			
 					successful = true;
+					
 				} else if (response.startsWith("Failure:login")) {
 					System.out.println("Log in failed, please try again");
 				} else {
@@ -135,6 +135,9 @@ public class Client {
 			System.out.println("Something went wrong with login handling, exiting");
 			System.exit(0);
 		}
+
+		outputToServer.println("ClientSideLoginDone");
+		outputToServer.flush();
 
 		return passwordHashString;
 	}

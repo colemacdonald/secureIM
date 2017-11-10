@@ -75,8 +75,6 @@ public class Server {
 				return false;
 			}
 
-			clientPublicKey = SecurityHelper.getUserPublicKey(username);
-
 			System.out.println("Verifying user identity...");
 			String passwordFile = "shared_data/user_hashed_passwords.csv";
 			BufferedReader sessionKeyReader = new BufferedReader(new FileReader(passwordFile));
@@ -121,11 +119,11 @@ public class Server {
 	// Returns hashed password
 	static String handleUserLogin() {
 		String passwordHashHexString = new String();
+		Scanner clientInputScanner = new Scanner(clientInputStream);
 
 		boolean successful = false;
 		do {
 			// Read login information from client
-			Scanner clientInputScanner = new Scanner(clientInputStream);
 			String newOrExisting = new String();
 			String usernameField = new String();
 			String passwordField = new String();
@@ -159,14 +157,23 @@ public class Server {
 					continue;
 				}
 			} else {
-				System.out.println("Client did not follow protocol");
+				System.out.println("Received unexpected message from Client during new or existing check: " + newOrExisting);
 				respondFailure("login");
 				clientInputScanner.close();
 				System.exit(0);
 				return "";
 			}
 
-			successful = true;
+			// Need to wait for Client to be done, to ensure that their public key has been added to "trusted public keys"
+			String clientReady = clientInputScanner.nextLine();
+			if (clientReady.equals("ClientSideLoginDone")) {
+				successful = true;
+			} else {
+				System.out.println("Received unexpected message from Client when waiting for login confirmation: " + clientReady);
+				System.exit(0);
+			}
+
+			clientPublicKey = SecurityHelper.getUserPublicKey(usernameFromClient);
 
 		} while(!successful);
 
@@ -274,12 +281,8 @@ public class Server {
 						messagingWindow.close();
 					}
 
-					if(sendMessageThread != null) {
+					if(sendMessageThread != null || receiveMessageThread != null) {
 						sendMessageThread.stop();
-					}
-
-					if(receiveMessageThread != null) {
-						receiveMessageThread.stop();
 					}
 
 					if (!verifyClientModes(modes)) {
