@@ -220,7 +220,9 @@ public class Client {
 			verifyCorrectModes(modes);
 
 			serverPublicKey = SecurityHelper.getUserPublicKey("server");
-			String passwordHash = handleLogin(modes.get("newUser"));
+			String passwordHash = "";
+			if(modes.get("authentication") || modes.get("integrity") || modes.get("authentication") || modes.get("newUser"))
+				passwordHash= handleLogin(modes.get("newUser"));
 
 			SecurityHelper.SessionKeyIVPair sessionKeyIVPair = new SecurityHelper.SessionKeyIVPair(null, null);
 

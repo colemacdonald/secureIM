@@ -289,10 +289,14 @@ public class Server {
 						System.out.println("Client attempted to start connection with incorrect modes");
 						continue;
 					}		
-
-					String hashedPasswordFromClient = handleUserLogin();
-					if(hashedPasswordFromClient.equals("")) {
-						continue;
+					String hashedPasswordFromClient = "";
+					
+					if(modes.get("authentication") || modes.get("integrity") || modes.get("authentication") || modes.get("newUser"))
+					{
+						hashedPasswordFromClient = handleUserLogin();
+						if(hashedPasswordFromClient.equals("")) {
+							continue;
+						}
 					}
 
 					SecurityHelper.SessionKeyIVPair sessionKeyIVPair = new SecurityHelper.SessionKeyIVPair(null, null);
