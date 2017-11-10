@@ -291,7 +291,7 @@ public class Server {
 					}		
 					String hashedPasswordFromClient = "";
 					
-					if(modes.get("authentication") || modes.get("integrity") || modes.get("authentication") || modes.get("newUser"))
+					if(modes.get("confidentiality") || modes.get("integrity") || modes.get("authentication") || modes.get("newUser"))
 					{
 						hashedPasswordFromClient = handleUserLogin();
 						if(hashedPasswordFromClient.equals("")) {

@@ -221,7 +221,7 @@ public class Client {
 
 			serverPublicKey = SecurityHelper.getUserPublicKey("server");
 			String passwordHash = "";
-			if(modes.get("authentication") || modes.get("integrity") || modes.get("authentication") || modes.get("newUser"))
+			if(modes.get("confidentiality") || modes.get("integrity") || modes.get("authentication") || modes.get("newUser"))
 				passwordHash= handleLogin(modes.get("newUser"));
 
 			SecurityHelper.SessionKeyIVPair sessionKeyIVPair = new SecurityHelper.SessionKeyIVPair(null, null);
